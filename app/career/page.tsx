@@ -33,14 +33,14 @@ export default function CareerPage() {
                       {role.location}
                     </span>
                     <span className="inline-flex items-center gap-2">
-                      <BriefcaseBusiness className="h-4 w-4 text-brand-cyan" />
+                      <BriefcaseBusiness className="h-4 w-4 text-brand-blue" />
                       {role.type}
                     </span>
                   </div>
                 </div>
                 <a
                   href="mailto:careers@expertlearning.in"
-                  className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-brand-blue to-brand-cyan px-5 py-3 text-sm font-semibold text-white"
+                  className="inline-flex items-center justify-center rounded-lg bg-[linear-gradient(135deg,#2563EB,#3B82F6)] px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(37,99,235,0.28),0_0_18px_rgba(96,165,250,0.12)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(37,99,235,0.34),0_0_24px_rgba(96,165,250,0.16)]"
                 >
                   Apply
                 </a>
@@ -50,7 +50,7 @@ export default function CareerPage() {
         </div>
       </section>
       <CtaBand
-        title="Don’t see your role yet?"
+        title="Don't see your role yet?"
         description="Share your profile with us. We are always looking for mentors, operators, and growth-minded teammates."
       />
     </>

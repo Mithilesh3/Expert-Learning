@@ -4,28 +4,32 @@ import { SectionHeading } from "@/components/ui/section-heading";
 
 export function CertificationSection() {
   return (
-    <section className="section-shell px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+    <section className="section-shell bg-[#F5F9FF] px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <Reveal>
           <SectionHeading
             eyebrow="Certification Paths"
             title="Roadmaps that make progression feel visible and achievable"
             description="Move through AWS, Azure, and AI skill ladders with curated pathways that connect foundational knowledge to advanced practitioner outcomes."
+            theme="light"
           />
         </Reveal>
         <div className="mt-12 grid gap-6 lg:grid-cols-3">
           {certificationPaths.map((path, index) => (
             <Reveal key={path.title} delay={index * 0.06}>
-              <div className="rounded-[30px] border border-border bg-card p-7 shadow-soft">
-                <h3 className="text-2xl font-semibold text-foreground">{path.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-muted">{path.subtitle}</p>
+              <div className="surface-card rounded-[24px] p-6">
+                <h3 className="text-[15px] font-semibold text-[#0F172A]">{path.title}</h3>
+                <p className="mt-3 text-[13px] leading-[1.75] text-[#475569]">{path.subtitle}</p>
                 <div className="mt-8 space-y-4">
                   {path.steps.map((step, stepIndex) => (
                     <div key={step} className="flex items-start gap-4">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-blue to-brand-cyan text-sm font-semibold text-white">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#2563EB] text-[12px] font-semibold text-white">
                         {stepIndex + 1}
                       </div>
-                      <div className="rounded-2xl border border-border bg-background/60 px-4 py-3 text-sm font-medium text-foreground">
+                      <div className="relative flex-1 rounded-[12px] border border-[#DCE9FF] bg-[#F8FBFF] px-4 py-3 text-[13px] font-medium text-[#0F172A]">
+                        {stepIndex < path.steps.length - 1 && (
+                          <div className="absolute -bottom-4 left-0 hidden h-[2px] w-8 bg-[#BFDBFE] md:block" />
+                        )}
                         {step}
                       </div>
                     </div>

@@ -5,21 +5,33 @@ export function SectionHeading({
   title,
   description,
   align = "left",
+  theme = "dark",
 }: {
   eyebrow: string;
   title: string;
   description: string;
   align?: "left" | "center";
+  theme?: "dark" | "light";
 }) {
   return (
-    <div className={cn("max-w-3xl", align === "center" && "mx-auto text-center")}>
-      <span className="inline-flex rounded-full border border-brand-cyan/18 bg-orange-50 px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-cyan sm:px-4 sm:text-xs sm:tracking-[0.28em]">
-        {eyebrow}
-      </span>
-      <h2 className="mt-5 text-2xl font-semibold tracking-tight text-balance text-foreground sm:text-4xl">
+    <div className={cn("max-w-[560px]", align === "center" && "mx-auto text-center")}>
+      <div className={cn("section-label", theme === "light" && "text-[#2563EB]")}>{eyebrow}</div>
+      <h2
+        className={cn(
+          "mt-1.5 text-[26px] font-bold leading-[1.2]",
+          theme === "light" ? "text-[#0F172A]" : "text-brand-text",
+        )}
+      >
         {title}
       </h2>
-      <p className="mt-4 text-sm leading-7 text-muted sm:text-lg">{description}</p>
+      <p
+        className={cn(
+          "mt-4 text-sm leading-7",
+          theme === "light" ? "text-[#475569]" : "text-brand-muted",
+        )}
+      >
+        {description}
+      </p>
     </div>
   );
 }

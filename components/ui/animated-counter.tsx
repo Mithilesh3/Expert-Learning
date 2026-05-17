@@ -44,12 +44,12 @@ export function AnimatedCounter({
   }, [isInView, reducedMotion, value]);
 
   return (
-    <div ref={ref} className="rounded-3xl border border-border bg-card/80 p-4 backdrop-blur sm:p-5">
-      <div className="text-2xl font-semibold text-foreground sm:text-3xl">
+    <div ref={ref} className="surface-card p-4 sm:p-5">
+      <div className="mono-meta text-2xl font-bold text-brand-blue sm:text-3xl">
         {shownValue}
         {suffix}
       </div>
-      <div className="mt-2 text-sm text-muted">{label}</div>
+      <div className="mt-2 text-[12px] text-brand-muted">{label}</div>
     </div>
   );
 }

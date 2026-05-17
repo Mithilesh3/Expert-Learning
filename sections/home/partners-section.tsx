@@ -6,7 +6,7 @@ export function PartnersSection() {
   const logos = [...companyLogos, ...companyLogos];
 
   return (
-    <section className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+    <section className="bg-white px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <Reveal>
           <SectionHeading
@@ -14,14 +14,15 @@ export function PartnersSection() {
             title="Aligned with the skills modern employers actively hire for"
             description="Our programs are structured around role readiness, certification depth, and workflow confidence so learners can transition into real delivery environments."
             align="center"
+            theme="light"
           />
         </Reveal>
-        <div className="mt-10 overflow-hidden rounded-[30px] border border-border bg-card py-6 shadow-soft">
+        <div className="surface-card mt-10 overflow-hidden rounded-[28px] py-6">
           <div className="logo-marquee flex min-w-max gap-4 px-4">
             {logos.map((company, index) => (
               <div
                 key={`${company}-${index}`}
-                className="min-w-[170px] rounded-full border border-border bg-background/70 px-6 py-4 text-center text-sm font-semibold text-foreground"
+                className="min-w-[170px] rounded-full border border-[#DCE9FF] bg-[#F8FBFF] px-6 py-4 text-center text-[12px] font-semibold text-[#0F172A]"
               >
                 {company}
               </div>

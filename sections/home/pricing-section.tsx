@@ -5,7 +5,7 @@ import { SectionHeading } from "@/components/ui/section-heading";
 
 export function PricingSection() {
   return (
-    <section className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+    <section className="bg-white px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <Reveal>
           <SectionHeading
@@ -13,6 +13,7 @@ export function PricingSection() {
             title="Flexible plans for individual learners and enterprise teams"
             description="Choose a path that matches your pace, budget, and career goals. EMI options and guided consultation are available across plans."
             align="center"
+            theme="light"
           />
         </Reveal>
         <div className="mt-12 grid gap-6 lg:grid-cols-3">

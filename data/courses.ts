@@ -32,28 +32,28 @@ export const courseCategories = [
     title: "AWS Programs",
     description: "Role-based certification tracks for architecture, DevOps, and cloud foundations.",
     href: "/courses/aws",
-    gradient: "from-[#0B1F3A] to-[#2563EB]",
+    gradient: "from-[#0A2C80] via-[#2563EB] to-[#60A5FA]",
   },
   {
     key: "azure",
     title: "Azure Programs",
     description: "Microsoft-aligned tracks for administrators, solution architects, and AI engineers.",
     href: "/courses/azure",
-    gradient: "from-[#2563EB] to-[#60A5FA]",
+    gradient: "from-[#102F85] via-[#2563EB] to-[#60A5FA]",
   },
   {
     key: "ai",
     title: "AI & GenAI",
     description: "Applied AI programs built around LLM workflows, prompting, and business use cases.",
     href: "/courses/ai",
-    gradient: "from-[#F97316] to-[#2563EB]",
+    gradient: "from-[#173A94] via-[#2563EB] to-[#60A5FA]",
   },
   {
     key: "devops",
     title: "DevOps Programs",
     description: "Hands-on pipelines, containers, automation, and platform engineering bootcamps.",
     href: "/courses/devops",
-    gradient: "from-[#0B1F3A] to-[#F97316]",
+    gradient: "from-[#071A52] via-[#0A2C80] to-[#3B82F6]",
   },
 ] as const;
 

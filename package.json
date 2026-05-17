@@ -9,13 +9,21 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.10.3",
+    "@supabase/supabase-js": "^2.105.4",
     "clsx": "^2.1.1",
+    "firebase": "^12.13.0",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.16.0",
     "next": "^16.2.6",
     "next-themes": "^0.4.6",
+    "posthog-node": "^5.21.2",
+    "razorpay": "^2.9.6",
     "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "react-dom": "^19.2.6",
+    "resend": "^6.12.3",
+    "twilio": "^6.0.2",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

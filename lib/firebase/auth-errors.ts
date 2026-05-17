@@ -1,0 +1,41 @@
+const fallbackMessage = "We couldn't complete the verification. Please try again.";
+
+const errorMessages: Record<string, string> = {
+  "auth/invalid-phone-number": "Enter a valid mobile number with the selected country code.",
+  "auth/missing-phone-number": "Enter your mobile number to continue.",
+  "auth/too-many-requests": "Too many attempts were made. Please wait a little and try again.",
+  "auth/invalid-verification-code": "The OTP you entered is invalid. Please try again.",
+  "auth/invalid-verification-id": "This verification session is no longer valid. Request a fresh OTP and try again.",
+  "auth/missing-verification-id": "Verification data is missing. Please request a new OTP.",
+  "auth/code-expired": "That OTP has expired. Request a new one and try again.",
+  "auth/session-expired": "Your verification session expired. Request a fresh OTP to continue.",
+  "auth/quota-exceeded": "OTP requests are temporarily unavailable for this project. Please try again later.",
+  "auth/captcha-check-failed": "reCAPTCHA verification failed. Please retry the verification step.",
+  "auth/missing-app-credential":
+    "The phone verification could not be started. Refresh the page and try again.",
+  "auth/invalid-app-credential":
+    "The phone verification request used an invalid or expired app verifier. Please retry the OTP request.",
+  "auth/unauthorized-domain":
+    "This domain is not authorized for Firebase phone authentication. Add it in Firebase Authentication settings.",
+  "auth/operation-not-allowed":
+    "Phone authentication is not enabled for this Firebase project yet.",
+  "auth/internal-error": "Firebase returned an internal auth error. Please try the request again.",
+  "auth/network-request-failed":
+    "Google reCAPTCHA or Firebase could not be reached in time. Check your network, disable VPN/ad blockers, and try again.",
+  "auth/popup-blocked": "Your browser blocked the verification flow. Please allow popups and try again.",
+};
+
+export function getFirebaseAuthErrorMessage(error: unknown) {
+  if (!error || typeof error !== "object") {
+    return fallbackMessage;
+  }
+
+  const code = "code" in error ? String(error.code) : "";
+  const rawMessage = "message" in error && typeof error.message === "string" ? error.message : "";
+
+  if (code && errorMessages[code]) {
+    return errorMessages[code];
+  }
+
+  return rawMessage || fallbackMessage;
+}

@@ -32,11 +32,11 @@ export default function AboutPage() {
             />
           </Reveal>
           <Reveal delay={0.08}>
-            <div className="glass-panel rounded-[32px] border border-border p-8">
-              <p className="text-lg leading-8 text-foreground">
+            <div className="surface-card p-6 sm:p-8">
+              <p className="text-base leading-8 text-brand-text">
                 Our approach is simple: make high-growth technology careers feel less overwhelming and more achievable. We care about clarity, quality, and trust because those three things compound into better learner outcomes.
               </p>
-              <p className="mt-5 text-sm leading-7 text-muted">
+              <p className="mt-5 text-sm leading-7 text-brand-muted">
                 From first-time IT learners to working professionals and corporate teams, we build programs that feel modern, structured, and deeply relevant to real-world delivery expectations.
               </p>
             </div>

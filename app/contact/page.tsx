@@ -1,4 +1,5 @@
 import { Mail, MapPin, PhoneCall } from "lucide-react";
+import { LeadForm } from "@/components/forms/lead-form";
 import { buildMetadata } from "@/lib/metadata";
 import { siteConfig } from "@/lib/site-config";
 import { PageHero } from "@/components/ui/page-hero";
@@ -12,9 +13,6 @@ export const metadata = buildMetadata({
   path: "/contact",
 });
 
-const inputClassName =
-  "h-12 rounded-2xl border border-border bg-card px-4 text-sm text-foreground outline-none transition placeholder:text-muted focus:border-brand-blue/40";
-
 export default function ContactPage() {
   return (
     <>
@@ -23,8 +21,8 @@ export default function ContactPage() {
         title="Talk to admissions, mentors, or our corporate learning team"
         description="Whether you are choosing your first certification or planning a team upskilling initiative, we are here to help."
       />
-      <section className="px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.85fr_1.15fr]">
+      <section className="px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.82fr_1.18fr]">
           <Reveal>
             <SectionHeading
               eyebrow="Reach Us"
@@ -37,45 +35,21 @@ export default function ContactPage() {
                 { icon: Mail, label: siteConfig.email },
                 { icon: MapPin, label: siteConfig.address },
               ].map((item) => (
-                <div key={item.label} className="glass-panel flex items-center gap-4 rounded-[26px] border border-border p-5">
-                  <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-blue/10 text-brand-blue">
-                    <item.icon className="h-5 w-5" />
+                <div key={item.label} className="surface-card rounded-[10px] p-4">
+                  <div className="flex items-center gap-4">
+                    <div className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-brand-blue/10 text-brand-blue">
+                      <item.icon className="h-5 w-5" />
+                    </div>
+                    <div className="text-sm font-medium text-brand-text">{item.label}</div>
                   </div>
-                  <div className="text-sm font-medium text-foreground">{item.label}</div>
                 </div>
               ))}
             </div>
           </Reveal>
           <Reveal delay={0.08}>
-            <form className="glass-panel grid gap-4 rounded-[32px] border border-border p-6 sm:p-8">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <input className={inputClassName} type="text" placeholder="Name" />
-                <input className={inputClassName} type="email" placeholder="Email" />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <input className={inputClassName} type="tel" placeholder="Phone" />
-                <select className={inputClassName} defaultValue="">
-                  <option value="" disabled>
-                    Interested Course
-                  </option>
-                  <option>AWS</option>
-                  <option>Azure</option>
-                  <option>AI & GenAI</option>
-                  <option>DevOps</option>
-                  <option>Corporate Training</option>
-                </select>
-              </div>
-              <textarea
-                className="min-h-36 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground outline-none transition placeholder:text-muted focus:border-brand-blue/40"
-                placeholder="Tell us about your goal"
-              />
-              <button
-                type="submit"
-                className="inline-flex h-12 items-center justify-center rounded-2xl bg-gradient-to-r from-brand-blue to-brand-cyan text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:-translate-y-0.5"
-              >
-                Get Free Career Consultation
-              </button>
-            </form>
+            <div className="surface-form p-5 sm:p-7">
+              <LeadForm includeMessage submitLabel="Get Free Career Consultation" />
+            </div>
           </Reveal>
         </div>
       </section>

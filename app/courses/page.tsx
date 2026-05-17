@@ -33,11 +33,10 @@ export default function CoursesPage() {
           <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {courseCategories.map((category, index) => (
               <Reveal key={category.key} delay={index * 0.05}>
-                <div className="rounded-[28px] border border-border bg-card p-6 shadow-soft">
-                  <div className={`inline-flex rounded-full bg-gradient-to-r ${category.gradient} px-4 py-1 text-xs font-semibold text-white`}>
-                    {category.title}
-                  </div>
-                  <p className="mt-4 text-sm leading-6 text-muted">{category.description}</p>
+                <div className="surface-card p-5">
+                  <div className={`h-[3px] w-full rounded-t-[12px] bg-gradient-to-r ${category.gradient}`} />
+                  <div className="mt-4 text-[14px] font-semibold text-brand-text">{category.title}</div>
+                  <p className="mt-3 text-[12px] leading-[1.65] text-brand-muted">{category.description}</p>
                 </div>
               </Reveal>
             ))}

@@ -18,29 +18,32 @@ export function PricingCard({
   return (
     <div
       className={cn(
-        "relative flex h-full flex-col rounded-[26px] border border-border bg-card p-6 shadow-soft sm:rounded-[30px] sm:p-8",
-        recommended && "border-brand-cyan/35 ring-4 ring-brand-cyan/8",
+        "surface-card relative flex h-full flex-col rounded-[24px] px-6 py-7",
+        recommended &&
+          "border-2 border-[#60A5FA] shadow-[0_22px_48px_rgba(37,99,235,0.14),0_0_0_1px_rgba(96,165,250,0.12)]",
       )}
     >
       {recommended && (
-        <span className="absolute right-5 top-5 rounded-full bg-gradient-to-r from-brand-cyan to-orange-500 px-3 py-1 text-xs font-semibold text-white sm:right-6 sm:top-6">
+        <span className="absolute -top-3 left-6 rounded-full bg-[linear-gradient(135deg,#2563EB,#3B82F6)] px-3 py-1 text-[11px] font-semibold text-white">
           Recommended
         </span>
       )}
-      <div className="text-sm uppercase tracking-[0.25em] text-brand-blue">{name}</div>
-      <div className="mt-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">{price}</div>
-      <p className="mt-4 text-sm leading-6 text-muted">{description}</p>
-      <div className="mt-8 space-y-3">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#2563EB]">{name}</div>
+      <div className="mono-meta mt-4 text-[32px] font-bold leading-none text-[#2563EB]">{price}</div>
+      <p className="mt-4 text-sm leading-6 text-[#475569]">{description}</p>
+      <div className="mt-6 space-y-3">
         {features.map((feature) => (
-          <div key={feature} className="flex items-start gap-3 text-sm text-muted">
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-cyan" />
+          <div key={feature} className="flex items-start gap-3 text-sm text-[#475569]">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#2563EB]" />
             <span>{feature}</span>
           </div>
         ))}
       </div>
-      <ButtonLink href="/contact" className="mt-auto pt-8">
-        Talk to Admissions
-      </ButtonLink>
+      <div className="mt-auto pt-6">
+        <ButtonLink href="/contact" className="w-full">
+          Talk to Admissions
+        </ButtonLink>
+      </div>
     </div>
   );
 }

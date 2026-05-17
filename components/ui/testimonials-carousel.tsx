@@ -33,16 +33,16 @@ export function TestimonialsCarousel({
   const active = items[index];
 
   return (
-    <div className="glass-panel overflow-hidden rounded-[32px] border border-border p-8">
+    <div className="surface-card overflow-hidden rounded-[28px] p-6 sm:p-8">
       <div className="flex items-center justify-between gap-4">
-        <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white/80 text-brand-cyan">
+        <div className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-[#EAF2FF] text-[#2563EB]">
           <Quote className="h-6 w-6" />
         </div>
         <div className="flex gap-2">
           <button
             type="button"
             onClick={() => setIndex((current) => (current - 1 + items.length) % items.length)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card/70 text-foreground transition hover:border-brand-blue/30 hover:text-brand-blue"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#DCE9FF] bg-white text-[#0F172A] transition hover:border-[#60A5FA] hover:bg-[#F0F6FF] hover:text-[#2563EB]"
             aria-label="Previous testimonial"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -50,7 +50,7 @@ export function TestimonialsCarousel({
           <button
             type="button"
             onClick={() => setIndex((current) => (current + 1) % items.length)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card/70 text-foreground transition hover:border-brand-blue/30 hover:text-brand-blue"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#DCE9FF] bg-white text-[#0F172A] transition hover:border-[#60A5FA] hover:bg-[#F0F6FF] hover:text-[#2563EB]"
             aria-label="Next testimonial"
           >
             <ArrowRight className="h-4 w-4" />
@@ -66,20 +66,20 @@ export function TestimonialsCarousel({
           transition={{ duration: reducedMotion ? 0.18 : 0.35, ease: "easeOut" }}
           className="mt-8"
         >
-          <p className="text-xl leading-9 text-foreground sm:text-2xl">{active.review}</p>
-          <div className="mt-8 flex flex-col gap-5 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-lg leading-8 text-[#0F172A] sm:text-xl">{active.review}</p>
+          <div className="mt-8 flex flex-col gap-5 border-t border-[#E2E8F0] pt-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-blue to-brand-purple font-heading text-lg font-semibold text-white">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[linear-gradient(135deg,#2563EB,#3B82F6)] text-sm font-semibold text-white">
                 {active.initials}
               </div>
               <div>
-                <div className="font-semibold text-foreground">{active.name}</div>
-                <div className="text-sm text-muted">
+                <div className="text-sm font-semibold text-[#0F172A]">{active.name}</div>
+                <div className="text-[12px] text-[#64748B]">
                   {active.role} at {active.company}
                 </div>
               </div>
             </div>
-            <div className="rounded-full border border-brand-cyan/20 bg-orange-50 px-4 py-2 text-sm font-semibold text-brand-cyan">
+            <div className="rounded-full border border-[#BFDBFE] bg-[#EAF2FF] px-4 py-2 text-[12px] font-semibold text-[#2563EB]">
               {active.salaryHike}
             </div>
           </div>

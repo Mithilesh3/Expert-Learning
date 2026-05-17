@@ -13,12 +13,12 @@ export function IconCard({
   const Icon = iconMap[icon];
 
   return (
-    <div className="glass-panel rounded-[28px] border border-border p-6 transition duration-300 hover:-translate-y-1 hover:border-brand-blue/30">
-      <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-blue/12 to-brand-cyan/12 text-brand-blue">
-        <Icon className="h-6 w-6" />
+    <div className="surface-card rounded-[24px] p-5 transition-all duration-300 hover:-translate-y-1 hover:border-[#93C5FD] hover:bg-[#F8FBFF] hover:shadow-xl">
+      <div className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-[#EAF2FF] text-[#2563EB]">
+        <Icon className="h-5 w-5" />
       </div>
-      <h3 className="mt-5 text-xl font-semibold text-foreground">{title}</h3>
-      <p className="mt-3 text-sm leading-6 text-muted">{description}</p>
+      <h3 className="mt-4 text-[15px] font-semibold text-[#0F172A]">{title}</h3>
+      <p className="mt-3 text-[13px] leading-[1.75] text-[#475569]">{description}</p>
     </div>
   );
 }
