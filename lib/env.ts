@@ -1,7 +1,20 @@
 import { siteConfig } from "@/lib/site-config";
 
+function readEnv(name: string) {
+  const value = process.env[name];
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : undefined;
+}
+
 export const env = {
   nextPublicSiteUrl: process.env.NEXT_PUBLIC_SITE_URL || siteConfig.url,
+  nextPublicFirebaseApiKey: readEnv("NEXT_PUBLIC_FIREBASE_API_KEY"),
+  nextPublicFirebaseAuthDomain: readEnv("NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN"),
+  nextPublicFirebaseProjectId: readEnv("NEXT_PUBLIC_FIREBASE_PROJECT_ID"),
+  nextPublicFirebaseStorageBucket: readEnv("NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET"),
+  nextPublicFirebaseMessagingSenderId: readEnv("NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID"),
+  nextPublicFirebaseAppId: readEnv("NEXT_PUBLIC_FIREBASE_APP_ID"),
+  nextPublicFirebaseMeasurementId: readEnv("NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID"),
   nextPublicSupabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || "",
   nextPublicSupabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
   supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || "",
@@ -20,6 +33,15 @@ export const env = {
   airtableBaseId: process.env.AIRTABLE_BASE_ID || "",
   airtableTableName: process.env.AIRTABLE_TABLE_NAME || "Leads",
 };
+
+export const hasFirebaseEnv = Boolean(
+  env.nextPublicFirebaseApiKey &&
+    env.nextPublicFirebaseAuthDomain &&
+    env.nextPublicFirebaseProjectId &&
+    env.nextPublicFirebaseStorageBucket &&
+    env.nextPublicFirebaseMessagingSenderId &&
+    env.nextPublicFirebaseAppId,
+);
 
 export const hasSupabaseEnv = Boolean(
   env.nextPublicSupabaseUrl && env.supabaseServiceRoleKey,
