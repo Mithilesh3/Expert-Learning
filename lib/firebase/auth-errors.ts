@@ -10,7 +10,8 @@ const errorMessages: Record<string, string> = {
   "auth/code-expired": "That OTP has expired. Request a new one and try again.",
   "auth/session-expired": "Your verification session expired. Request a fresh OTP to continue.",
   "auth/quota-exceeded": "OTP requests are temporarily unavailable for this project. Please try again later.",
-  "auth/captcha-check-failed": "reCAPTCHA verification failed. Please retry the verification step.",
+  "auth/captcha-check-failed":
+    "reCAPTCHA verification failed for this domain. Open the site on an authorized Firebase domain, then retry the OTP request.",
   "auth/missing-app-credential":
     "The phone verification could not be started. Refresh the page and try again.",
   "auth/invalid-app-credential":
