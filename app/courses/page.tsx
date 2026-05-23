@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { buildMetadata } from "@/lib/metadata";
 import { courseCategories, coursesByCategory } from "@/data/courses";
-import { getCategorySectionHref, getCategorySectionId } from "@/lib/course-catalog";
+import { getCategorySectionId } from "@/lib/course-catalog";
 import { PageHero } from "@/components/ui/page-hero";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Reveal } from "@/components/ui/reveal";
@@ -36,7 +36,7 @@ export default function CoursesPage() {
             {courseCategories.map((category, index) => (
               <Reveal key={category.key} delay={index * 0.05}>
                 <Link
-                  href={getCategorySectionHref(category.key)}
+                  href={category.href}
                   className="surface-card block p-5 transition duration-200 hover:-translate-y-1 hover:border-brand-blue/30"
                 >
                   <div className={`h-[3px] w-full rounded-t-[12px] bg-gradient-to-r ${category.gradient}`} />

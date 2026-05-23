@@ -241,6 +241,16 @@ export function Header() {
     };
   }, [searchOpen]);
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setCoursesOpen(false);
+      setSearchOpen(false);
+      setMobileOpen(false);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [pathname]);
+
   return (
     <header className="sticky top-0 z-50 border-b border-[rgba(255,255,255,0.07)] bg-[#0D1117]">
       <div className="mx-auto flex h-16 w-full max-w-[1400px] min-w-0 items-center gap-[10px] overflow-hidden px-4 sm:px-8">
@@ -379,7 +389,7 @@ export function Header() {
           >
             <div
               ref={coursesDropdownRef}
-              className="border-t-[0.5px] border-b-[0.5px] border-t-[rgba(255,255,255,0.05)] border-b-[rgba(255,255,255,0.07)] bg-[#0f1623] px-8 pt-5 pb-6 shadow-[0_24px_48px_rgba(0,0,0,0.5)]"
+              className="max-h-[calc(100vh-4rem)] overflow-y-auto border-t-[0.5px] border-b-[0.5px] border-t-[rgba(255,255,255,0.05)] border-b-[rgba(255,255,255,0.07)] bg-[#0f1623] px-8 pt-5 pb-6 shadow-[0_24px_48px_rgba(0,0,0,0.5)]"
             >
               <div className="mx-auto grid max-w-[1400px] grid-cols-[1fr_220px] gap-4">
                 <div className="grid grid-cols-2 gap-2">

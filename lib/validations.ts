@@ -19,6 +19,8 @@ export const leadSchema = z.object({
   course: z.string().min(2),
   message: z.string().optional().default(""),
   source: z.string().min(2).optional().default("Website Inquiry"),
+  pageUrl: z.string().optional().default(""),
+  courseSlug: z.string().optional().default(""),
 });
 
 export const paymentCreateSchema = z

@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { allCourses } from "@/data/courses";
 
@@ -43,6 +44,7 @@ export function LeadForm({
   variant = "default",
   tone = "dark",
 }: LeadFormProps) {
+  const pathname = usePathname();
   const [form, setForm] = useState({
     ...initialState,
     course: initialCourse,
@@ -73,6 +75,11 @@ export function LeadForm({
     setIsSuccess(false);
 
     try {
+      const matchedCourse = allCourses.find(
+        (course) => course.title === form.course || course.title === initialCourse,
+      );
+      const pageUrl = typeof window !== "undefined" ? window.location.href : "";
+
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: {
@@ -85,6 +92,8 @@ export function LeadForm({
           course: form.course,
           message: form.message,
           source,
+          pageUrl,
+          courseSlug: matchedCourse?.slug || pathname.replace(/^\/+/, ""),
         }),
       });
 

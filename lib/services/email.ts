@@ -14,6 +14,8 @@ type LeadEmailPayload = {
   course: string;
   message: string;
   source?: string;
+  pageUrl?: string;
+  courseSlug?: string;
 };
 
 type EnrollmentEmailPayload = {
@@ -34,6 +36,7 @@ type EmailDispatchPayload = {
   text: string;
   replyTo?: string;
   context: string;
+  providerPreference?: "auto" | "gmail" | "resend";
 };
 
 function escapeHtml(value: string) {
@@ -89,15 +92,37 @@ function getGmailTransporter() {
 
 async function sendEmailOrThrow(payload: EmailDispatchPayload) {
   const resend = getResendClient();
+  const transporter = getGmailTransporter();
+  const providerPreference = payload.providerPreference || "auto";
 
   console.info("[Email] attempting email send", {
     context: payload.context,
     to: payload.to,
     subject: payload.subject,
-    provider: resend ? "resend" : hasGmailEmailEnv ? "gmail" : "none",
+    provider:
+      providerPreference === "gmail"
+        ? transporter
+          ? "gmail"
+          : resend
+            ? "resend"
+            : "none"
+        : providerPreference === "resend"
+          ? resend
+            ? "resend"
+            : transporter
+              ? "gmail"
+              : "none"
+          : resend
+            ? "resend"
+            : transporter
+              ? "gmail"
+              : "none",
   });
 
-  if (resend) {
+  const shouldTryGmailFirst = providerPreference === "gmail";
+  const shouldTryResendFirst = providerPreference !== "gmail";
+
+  if (shouldTryResendFirst && resend) {
     const { data, error } = await resend.emails.send({
       from: env.resendFromEmail,
       to: payload.to,
@@ -119,28 +144,52 @@ async function sendEmailOrThrow(payload: EmailDispatchPayload) {
     return data;
   }
 
-  const transporter = getGmailTransporter();
+  if (transporter) {
+    const info = await transporter.sendMail({
+      from: env.gmailUser,
+      to: payload.to,
+      replyTo: payload.replyTo,
+      subject: payload.subject,
+      html: payload.html,
+      text: payload.text,
+    });
 
-  if (!transporter) {
+    if (!info.messageId) {
+      throw new Error(`Unable to deliver ${payload.context} email via Gmail.`);
+    }
+
+    return info;
+  }
+
+  if (shouldTryGmailFirst && resend) {
+    const { data, error } = await resend.emails.send({
+      from: env.resendFromEmail,
+      to: payload.to,
+      replyTo: payload.replyTo,
+      subject: payload.subject,
+      html: payload.html,
+      text: payload.text,
+    });
+
+    if (error || !data?.id) {
+      console.error("[Email] Resend delivery failed", {
+        context: payload.context,
+        error,
+        data,
+      });
+      throw new Error(error?.message || `Unable to deliver ${payload.context} email via Resend.`);
+    }
+
+    return data;
+  }
+
+  if (!transporter && !resend) {
     throw new Error(
       "Email delivery is not configured. Add RESEND_API_KEY or set GMAIL_USER and GMAIL_APP_PASSWORD.",
     );
   }
 
-  const info = await transporter.sendMail({
-    from: env.gmailUser,
-    to: payload.to,
-    replyTo: payload.replyTo,
-    subject: payload.subject,
-    html: payload.html,
-    text: payload.text,
-  });
-
-  if (!info.messageId) {
-    throw new Error(`Unable to deliver ${payload.context} email via Gmail.`);
-  }
-
-  return info;
+  throw new Error(`Unable to deliver ${payload.context} email.`);
 }
 
 function resolveLeadSubject(source: string, name: string) {
@@ -156,6 +205,8 @@ export async function sendLeadEmails(payload: LeadEmailPayload) {
   const source = payload.source || "Website Inquiry";
   const course = payload.course || "";
   const message = payload.message || "";
+  const pageUrl = payload.pageUrl || "";
+  const courseSlug = payload.courseSlug || "";
   const replyTo = payload.email || undefined;
   const recipient = getSupportRecipient();
   const subject = resolveLeadSubject(source, payload.name);
@@ -168,6 +219,8 @@ export async function sendLeadEmails(payload: LeadEmailPayload) {
       <p><strong>Email:</strong> ${escapeHtml(payload.email || "-")}</p>
       <p><strong>Course Interest:</strong> ${escapeHtml(course || "-")}</p>
       <p><strong>Message:</strong> ${escapeHtml(message || "-")}</p>
+      <p><strong>Page URL:</strong> ${escapeHtml(pageUrl || "-")}</p>
+      <p><strong>Course Slug:</strong> ${escapeHtml(courseSlug || "-")}</p>
       <p><strong>Submitted at:</strong> ${escapeHtml(submittedAt)}</p>
       <p><strong>Source:</strong> ${escapeHtml(source)}</p>
     </div>
@@ -179,6 +232,8 @@ export async function sendLeadEmails(payload: LeadEmailPayload) {
     `Email: ${payload.email || "-"}`,
     `Course Interest: ${course || "-"}`,
     `Message: ${message || "-"}`,
+    `Page URL: ${pageUrl || "-"}`,
+    `Course Slug: ${courseSlug || "-"}`,
     `Submitted at: ${submittedAt}`,
     `Source: ${source}`,
   ].join("\n");
@@ -190,6 +245,7 @@ export async function sendLeadEmails(payload: LeadEmailPayload) {
     html: internalHtml,
     text: internalText,
     context: "lead notification",
+    providerPreference: "gmail",
   });
 
   if (!payload.email.trim()) {
