@@ -1,28 +1,24 @@
 "use client";
 
-import { Award, BookOpen, CheckCircle2, Clock3, LoaderCircle, PlayCircle } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { BookOpen, LoaderCircle } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
+import { MyLearningCard } from "@/components/dashboard/my-learning-card";
 import { LmsPortal } from "@/components/dashboard/lms-portal";
 import { allCourses } from "@/data/courses";
 import { getLmsProgramBySlug, lmsPrograms, type LmsLesson, type LmsProgram } from "@/data/lms-content";
 import {
   getCompletedLessons,
   getMyEnrollments,
-  getLastVisitedLessons,
   getUserProfile,
-  isFirebaseConfigured,
   logFirestoreIssue,
   saveUserWhatsappNumber,
   type AppUserProfile,
   type FirestoreEnrollment,
-  type LastVisitedLesson,
 } from "@/lib/firebase";
-import {
-  latestOrderStorageKey,
-  type StoredOrderSuccess,
-} from "@/lib/order-success";
+import { readMyLearningCourses, type MyLearningCourse } from "@/lib/my-learning";
+import { latestOrderStorageKey, type StoredOrderSuccess } from "@/lib/order-success";
 
 type DashboardPanelProps = {
   initialCourseSlug?: string | null;
@@ -31,6 +27,21 @@ type DashboardPanelProps = {
 
 type DashboardLessonItem = Pick<LmsLesson, "id" | "title"> & {
   moduleId: string;
+};
+
+type DashboardSummaryCard = {
+  id: string;
+  courseSlug: string;
+  badge: string;
+  title: string;
+  status: string;
+  progress: number;
+  progressLabel: string;
+  meta: string[];
+  enrolledAt: string;
+  enrolledLabel: string;
+  syllabusUrl: string;
+  liveClassUrl: string;
 };
 
 function normalizePhoneNumber(value: string | null | undefined) {
@@ -106,17 +117,41 @@ function buildInvoiceEnrollments(invoice: StoredOrderSuccess) {
   }));
 }
 
+function buildLocalLearningEnrollments(courses: MyLearningCourse[]) {
+  return courses.map((course) => ({
+    id: `learning-${course.courseSlug}`,
+    userId: "",
+    userName: "GenZNext Learner",
+    userPhone: "",
+    userEmail: "",
+    courseId: course.courseSlug,
+    courseName: course.title,
+    amountPaid: 0,
+    razorpayOrderId: "",
+    razorpayPaymentId: "",
+    invoiceNumber: "",
+    enrolledAt: course.enrolledAt,
+    status: "active" as const,
+    duration: course.duration,
+    level: course.level,
+    companyName: "",
+    gstNumber: "",
+  }));
+}
+
 export function DashboardPanel({ initialCourseSlug = null, paymentCompleted = false }: DashboardPanelProps) {
   const pathname = usePathname();
-  const { isAuthReady, user } = useAuth();
+  const router = useRouter();
+  const { isAuthReady, openAuthModal, user } = useAuth();
   const [enrollments, setEnrollments] = useState<Array<FirestoreEnrollment & { id: string }>>([]);
   const [invoiceEnrollments, setInvoiceEnrollments] = useState<Array<FirestoreEnrollment & { id: string }>>([]);
+  const [localLearningCourses, setLocalLearningCourses] = useState<MyLearningCourse[]>([]);
   const [profile, setProfile] = useState<AppUserProfile | null>(null);
   const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set());
-  const [lastVisitedLessons, setLastVisitedLessons] = useState<LastVisitedLesson[]>([]);
   const [enrollmentLoading, setEnrollmentLoading] = useState(false);
   const [enrollmentError, setEnrollmentError] = useState<string | null>(null);
   const [settingsSaving, setSettingsSaving] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(paymentCompleted);
   const selectedCourseSlug = useMemo(() => {
     const dashboardPathMatch = pathname.match(/^\/dashboard(?:\/([^/]+))?$/);
     return dashboardPathMatch?.[1] ? decodeURIComponent(dashboardPathMatch[1]) : initialCourseSlug;
@@ -124,10 +159,6 @@ export function DashboardPanel({ initialCourseSlug = null, paymentCompleted = fa
   const isCoursePortalView = Boolean(selectedCourseSlug);
 
   const dashboardEnrollments = useMemo(() => {
-    if (!invoiceEnrollments.length) {
-      return enrollments;
-    }
-
     const enrollmentMap = new Map(enrollments.map((enrollment) => [enrollment.courseId, enrollment]));
 
     for (const invoiceEnrollment of invoiceEnrollments) {
@@ -136,10 +167,16 @@ export function DashboardPanel({ initialCourseSlug = null, paymentCompleted = fa
       }
     }
 
+    for (const learningEnrollment of buildLocalLearningEnrollments(localLearningCourses)) {
+      if (!enrollmentMap.has(learningEnrollment.courseId)) {
+        enrollmentMap.set(learningEnrollment.courseId, learningEnrollment);
+      }
+    }
+
     return Array.from(enrollmentMap.values()).sort(
       (left, right) => new Date(right.enrolledAt).getTime() - new Date(left.enrolledAt).getTime(),
     );
-  }, [enrollments, invoiceEnrollments]);
+  }, [enrollments, invoiceEnrollments, localLearningCourses]);
 
   const dashboardCourses = useMemo(
     () =>
@@ -149,30 +186,91 @@ export function DashboardPanel({ initialCourseSlug = null, paymentCompleted = fa
         const lessons = getDashboardLessons(program);
         const completedCount = lessons.filter((lesson) => completedLessons.has(lesson.id)).length;
         const progressPercent = lessons.length ? Math.round((completedCount / lessons.length) * 100) : 0;
-        const lastVisited = lastVisitedLessons.find((item) => item.courseId === enrollment.courseId);
-        const lastVisitedLesson = lastVisited
-          ? lessons.find((lesson) => lesson.id === lastVisited.lessonId)
-          : null;
-        const nextLesson =
-          lastVisitedLesson || lessons.find((lesson) => !completedLessons.has(lesson.id)) || lessons[lessons.length - 1];
-        const completed = lessons.length > 0 && completedCount >= lessons.length;
-        const opened = Boolean(lastVisitedLesson) || completedCount > 0;
-        const cta = completed ? "View Certificate \u2192" : opened ? "Continue Learning \u2192" : "Start Course \u2192";
 
         return {
           enrollment,
           course,
           program,
-          lessons,
-          completed,
-          completedCount,
           progressPercent,
-          nextLessonTitle: completed ? "Certificate ready" : nextLesson?.title || "Orientation",
-          cta,
+          displayProgress: progressPercent > 0 ? progressPercent : 25,
         };
       }),
-    [completedLessons, dashboardEnrollments, lastVisitedLessons],
+    [completedLessons, dashboardEnrollments],
   );
+
+  const summaryCards = useMemo(() => {
+    const cardMap = new Map<string, DashboardSummaryCard>();
+
+    for (const item of dashboardCourses) {
+      cardMap.set(item.enrollment.courseId, {
+        id: item.enrollment.id,
+        courseSlug: item.enrollment.courseId,
+        badge: getCourseIcon(item.enrollment.courseId),
+        title: item.course?.title || item.enrollment.courseName,
+        status: `Enrolled • ${item.program.status === "live" ? "Active Batch" : "Upcoming Batch"}`,
+        progress: item.displayProgress,
+        progressLabel: `${item.displayProgress}% Completed`,
+        meta: [item.enrollment.duration, item.enrollment.level],
+        enrolledAt: item.enrollment.enrolledAt,
+        enrolledLabel: `Enrolled on ${new Date(item.enrollment.enrolledAt).toLocaleDateString("en-IN")}`,
+        syllabusUrl: item.course?.officialSyllabusUrl || "",
+        liveClassUrl: item.program.liveClassUrl,
+      });
+    }
+
+    for (const item of localLearningCourses) {
+      if (cardMap.has(item.courseSlug)) {
+        continue;
+      }
+
+      const course = allCourses.find((entry) => entry.slug === item.courseSlug);
+      const program = getLmsProgramBySlug(item.courseSlug);
+      const progress = item.progress > 0 ? item.progress : 25;
+
+      cardMap.set(item.courseSlug, {
+        id: item.id,
+        courseSlug: item.courseSlug,
+        badge: getCourseIcon(item.courseSlug),
+        title: course?.title || item.title,
+        status: `${item.status} • ${program?.status === "live" ? "Active Batch" : item.batchLabel || "Upcoming Batch"}`,
+        progress,
+        progressLabel: `${progress}% Completed`,
+        meta: [item.duration || course?.duration || "Program", item.level || course?.level || "Access ready"],
+        enrolledAt: item.enrolledAt,
+        enrolledLabel: `Added to My Learning on ${new Date(item.enrolledAt).toLocaleDateString("en-IN")}`,
+        syllabusUrl: item.syllabusUrl || course?.officialSyllabusUrl || "",
+        liveClassUrl: program?.liveClassUrl || "",
+      });
+    }
+
+    return Array.from(cardMap.values()).sort(
+      (left, right) => new Date(right.enrolledAt).getTime() - new Date(left.enrolledAt).getTime(),
+    );
+  }, [dashboardCourses, localLearningCourses]);
+
+  const selectedGuestCourse = useMemo(
+    () => summaryCards.find((item) => item.courseSlug === selectedCourseSlug) || null,
+    [selectedCourseSlug, summaryCards],
+  );
+
+  useEffect(() => {
+    const syncLocalLearning = () => {
+      setLocalLearningCourses(readMyLearningCourses());
+    };
+
+    syncLocalLearning();
+    window.addEventListener("storage", syncLocalLearning);
+    return () => window.removeEventListener("storage", syncLocalLearning);
+  }, []);
+
+  useEffect(() => {
+    if (!showSuccessToast) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => setShowSuccessToast(false), 3800);
+    return () => window.clearTimeout(timer);
+  }, [showSuccessToast]);
 
   useEffect(() => {
     if (!user) {
@@ -181,7 +279,6 @@ export function DashboardPanel({ initialCourseSlug = null, paymentCompleted = fa
         setInvoiceEnrollments([]);
         setProfile(null);
         setCompletedLessons(new Set());
-        setLastVisitedLessons([]);
         setEnrollmentLoading(false);
         setEnrollmentError(null);
       });
@@ -232,17 +329,13 @@ export function DashboardPanel({ initialCourseSlug = null, paymentCompleted = fa
           return;
         }
 
-        const [nextCompletedLessons, nextLastVisitedLessons] = await Promise.all([
-          getCompletedLessons(user.uid),
-          getLastVisitedLessons(user.uid),
-        ]);
+        const nextCompletedLessons = await getCompletedLessons(user.uid);
 
         if (!active) {
           return;
         }
 
         setCompletedLessons(nextCompletedLessons);
-        setLastVisitedLessons(nextLastVisitedLessons);
       } catch (error) {
         if (!active) {
           return;
@@ -293,14 +386,23 @@ export function DashboardPanel({ initialCourseSlug = null, paymentCompleted = fa
 
   function handleCourseSelection(courseSlug: string) {
     if (pathname !== `/dashboard/${courseSlug}`) {
-      window.history.pushState(null, "", `/dashboard/${courseSlug}`);
+      router.push(`/dashboard/${encodeURIComponent(courseSlug)}`);
     }
   }
 
   function handleResetCourseSelection() {
     if (pathname !== "/dashboard") {
-      window.history.pushState(null, "", "/dashboard");
+      router.push("/dashboard");
     }
+  }
+
+  function handleProtectedCourseAccess(courseSlug: string) {
+    if (user) {
+      handleCourseSelection(courseSlug);
+      return;
+    }
+
+    openAuthModal("login", `/dashboard/${encodeURIComponent(courseSlug)}`);
   }
 
   async function handleWhatsappSave(phone: string) {
@@ -327,15 +429,7 @@ export function DashboardPanel({ initialCourseSlug = null, paymentCompleted = fa
     }
   }
 
-  if (!isFirebaseConfigured()) {
-    return (
-      <div className="min-h-full rounded-[24px] border border-[#e2e8f0] bg-white p-8 text-[#1e293b]">
-        Firebase auth setup required for the LMS dashboard.
-      </div>
-    );
-  }
-
-  if (!isAuthReady || !user || (enrollmentLoading && !isCoursePortalView)) {
+  if (!isAuthReady || (user && enrollmentLoading && !isCoursePortalView)) {
     return (
       <div className="flex min-h-full items-center justify-center bg-[#f8fafc] px-4 py-10">
         <div className="inline-flex items-center gap-3 rounded-[16px] border border-[#e2e8f0] bg-white px-5 py-4 text-sm text-[#64748b] shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
@@ -346,115 +440,154 @@ export function DashboardPanel({ initialCourseSlug = null, paymentCompleted = fa
     );
   }
 
+  if (selectedCourseSlug && !user) {
+    return (
+      <main className="min-h-full bg-[radial-gradient(circle_at_top,rgba(249,115,22,0.12),transparent_24%),linear-gradient(180deg,#071028_0%,#0B1736_100%)] px-4 py-6 text-white sm:px-6 lg:px-10">
+        <div className="mx-auto max-w-4xl">
+          <div className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.88),rgba(15,23,42,0.74))] p-6 shadow-[0_24px_64px_rgba(2,6,23,0.34)] sm:p-8">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#FDBA74]">
+              My Learning
+            </div>
+            <h1 className="mt-3 text-[30px] font-semibold leading-[1.12] text-white">
+              {selectedGuestCourse?.title || "Your enrolled program is ready"}
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-[#B7C3D9]">
+              Your enrollment has been saved on this device. Continue with your account to open the full course portal, join classes, and keep your learning progress synced.
+            </p>
+
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => openAuthModal("login", `/dashboard/${encodeURIComponent(selectedCourseSlug)}`)}
+                className="inline-flex items-center justify-center rounded-xl bg-[linear-gradient(135deg,#F97316,#FB923C)] px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(249,115,22,0.26)] transition hover:-translate-y-0.5"
+              >
+                Continue to My Course
+              </button>
+              {selectedGuestCourse?.syllabusUrl ? (
+                <a
+                  href={selectedGuestCourse.syllabusUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center rounded-xl border border-[rgba(249,115,22,0.24)] bg-[rgba(249,115,22,0.08)] px-5 py-3 text-sm font-medium text-[#FDBA74] transition hover:bg-[rgba(249,115,22,0.12)]"
+                >
+                  View Syllabus
+                </a>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   if (!selectedCourseSlug) {
     return (
-      <main className="min-h-full bg-[#f8fafc] px-4 py-6 text-[#1e293b] sm:px-6 lg:px-10">
+      <main className="min-h-full bg-[radial-gradient(circle_at_top,rgba(249,115,22,0.12),transparent_24%),linear-gradient(180deg,#071028_0%,#0B1736_100%)] px-4 py-6 text-white sm:px-6 lg:px-10">
         <div className="mx-auto max-w-6xl">
-          <div className="mb-6 rounded-[22px] border border-[#e2e8f0] bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.05)]">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#94a3b8]">
-              Learning dashboard
+          {showSuccessToast ? (
+            <div className="mb-5 rounded-2xl border border-emerald-400/18 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200 shadow-[0_14px_36px_rgba(16,185,129,0.14)]">
+              Enrollment successful! Your course has been added to My Learning.
+            </div>
+          ) : null}
+
+          <div className="mb-6 rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.9),rgba(15,23,42,0.72))] p-6 shadow-[0_24px_60px_rgba(2,6,23,0.34)] sm:p-7">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#FDBA74]">
+              Student Dashboard
             </div>
             <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h1 className="text-2xl font-semibold text-[#1e293b]">Your enrolled courses</h1>
-                <p className="mt-2 max-w-2xl text-sm text-[#64748b]">
-                  Pick a course to open its LMS portal. Your progress, last lesson, notes, and certificates stay linked to your account.
+                <h1 className="text-[30px] font-semibold leading-[1.12] text-white">My Learning</h1>
+                <p className="mt-2 max-w-2xl text-sm leading-7 text-[#B7C3D9]">
+                  Access your enrolled programs, syllabus, and learning resources.
                 </p>
               </div>
-              {paymentCompleted ? (
-                <div className="rounded-full border border-[#bbf7d0] bg-[#dcfce7] px-3 py-1 text-[11px] font-semibold text-[#16a34a]">
-                  Enrollment active
+              {summaryCards.length ? (
+                <div className="rounded-full border border-[rgba(249,115,22,0.2)] bg-[rgba(249,115,22,0.1)] px-3 py-1 text-[11px] font-semibold text-[#FDBA74]">
+                  {summaryCards.length} active program{summaryCards.length === 1 ? "" : "s"}
                 </div>
               ) : null}
             </div>
           </div>
 
           {enrollmentError ? (
-            <div className="mb-4 rounded-[12px] border border-[rgba(239,68,68,0.2)] bg-[rgba(239,68,68,0.06)] p-4 text-sm text-[#dc2626]">
+            <div className="mb-4 rounded-[16px] border border-[rgba(248,113,113,0.24)] bg-[rgba(127,29,29,0.24)] p-4 text-sm text-[#FCA5A5]">
               {enrollmentError}
             </div>
           ) : null}
 
-          {dashboardCourses.length ? (
+          {summaryCards.length ? (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {dashboardCourses.map((item) => (
-                <article
-                  key={item.enrollment.id}
-                  className="group rounded-[14px] border border-[#1e2d42] bg-[#111827] p-[18px] transition hover:border-[#f97316] hover:shadow-[0_20px_40px_rgba(15,23,42,0.16)]"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] border border-[rgba(249,115,22,0.2)] bg-[rgba(249,115,22,0.12)] text-[12px] font-bold text-[#f97316]">
-                      {getCourseIcon(item.enrollment.courseId)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h2 className="line-clamp-2 text-[15px] font-semibold text-[#f1f5f9]">
-                        {item.course?.title || item.enrollment.courseName}
-                      </h2>
-                      <div className="mt-1 flex flex-wrap items-center gap-2 text-[12px] text-[#475569]">
-                        <span>{item.enrollment.duration}</span>
-                        <span className="h-1 w-1 rounded-full bg-[#334155]" />
-                        <span>{item.enrollment.level}</span>
-                      </div>
-                    </div>
-                    {item.completed ? (
-                      <Award className="h-5 w-5 shrink-0 text-[#16a34a]" />
-                    ) : (
-                      <BookOpen className="h-5 w-5 shrink-0 text-[#475569]" />
-                    )}
-                  </div>
-
-                  <div className="mt-5">
-                    <div className="mb-2 flex items-center justify-between text-[11px]">
-                      <span className="text-[#475569]">Progress</span>
-                      <span className="font-semibold text-[#f97316]">
-                        {item.completedCount}/{item.lessons.length} lessons
-                      </span>
-                    </div>
-                    <div className="h-1 rounded-full bg-[#1e2d42]">
-                      <div
-                        className="h-full rounded-full bg-[linear-gradient(90deg,#f97316,#fb923c)]"
-                        style={{ width: `${item.progressPercent}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mt-4 rounded-[12px] border border-[#1e2d42] bg-[#0f172a] p-3">
-                    <div className="flex items-center gap-2 text-[11px] text-[#475569]">
-                      {item.completed ? <CheckCircle2 className="h-3.5 w-3.5 text-[#16a34a]" /> : <Clock3 className="h-3.5 w-3.5 text-[#f97316]" />}
-                      <span>Next up</span>
-                    </div>
-                    <div className="mt-1 line-clamp-1 text-[12px] font-medium text-[#f1f5f9]">
-                      {item.nextLessonTitle}
-                    </div>
-                  </div>
-
-                  <div className="text-[11px] text-[#334155]">
-                    Enrolled: {new Date(item.enrollment.enrolledAt).toLocaleDateString("en-IN")}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => handleCourseSelection(item.enrollment.courseId)}
-                    className="mt-1 inline-flex w-full items-center justify-center gap-2 rounded-[8px] bg-[#f97316] px-4 py-[10px] text-[13px] font-medium text-white transition hover:bg-[#ea580c]"
-                  >
-                    <PlayCircle className="h-4 w-4" />
-                    {item.progressPercent === 0 ? "Start Course →" : "Continue Learning →"}
-                  </button>
-                </article>
+              {summaryCards.map((item) => (
+                <MyLearningCard
+                  key={item.id}
+                  badge={item.badge}
+                  title={item.title}
+                  status={item.status}
+                  progress={item.progress}
+                  progressLabel={item.progressLabel}
+                  meta={item.meta}
+                  enrolledLabel={item.enrolledLabel}
+                  actions={[
+                    {
+                      label: "View Course",
+                      tone: "primary",
+                      icon: "course",
+                      onClick: () => handleProtectedCourseAccess(item.courseSlug),
+                    },
+                    item.syllabusUrl
+                      ? {
+                          label: "View Syllabus",
+                          tone: "secondary",
+                          icon: "syllabus" as const,
+                          href: item.syllabusUrl,
+                          external: true,
+                        }
+                      : {
+                          label: "View Syllabus",
+                          tone: "secondary",
+                          icon: "syllabus" as const,
+                          onClick: () => handleProtectedCourseAccess(item.courseSlug),
+                        },
+                    item.liveClassUrl && user
+                      ? {
+                          label: "Join Classes",
+                          tone: "ghost",
+                          icon: "classes" as const,
+                          href: item.liveClassUrl,
+                          external: true,
+                        }
+                      : {
+                          label: "Join Classes",
+                          tone: "ghost",
+                          icon: "classes" as const,
+                          onClick: () => handleProtectedCourseAccess(item.courseSlug),
+                        },
+                    {
+                      label: "Download Certificate",
+                      tone: "ghost",
+                      icon: "certificate",
+                      disabled: true,
+                    },
+                  ]}
+                />
               ))}
             </div>
           ) : (
-            <div className="rounded-[18px] border border-[#e2e8f0] bg-white p-8 text-center shadow-[0_18px_40px_rgba(15,23,42,0.05)]">
-              <BookOpen className="mx-auto h-8 w-8 text-[#94a3b8]" />
-              <h2 className="mt-4 text-lg font-semibold text-[#1e293b]">No active enrollments yet</h2>
-              <p className="mx-auto mt-2 max-w-md text-sm text-[#64748b]">
-                After purchase, your active course cards will appear here first. Then you can open the LMS portal course by course.
+            <div className="rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.9),rgba(15,23,42,0.72))] p-8 text-center shadow-[0_18px_40px_rgba(2,6,23,0.28)]">
+              <BookOpen className="mx-auto h-8 w-8 text-[#8FA1BF]" />
+              <h2 className="mt-4 text-lg font-semibold text-white">You haven&apos;t enrolled in any training yet.</h2>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-7 text-[#B7C3D9]">
+                Complete an enrollment and your purchased programs will appear here automatically.
               </p>
             </div>
           )}
         </div>
       </main>
     );
+  }
+
+  if (!user) {
+    return null;
   }
 
   return (

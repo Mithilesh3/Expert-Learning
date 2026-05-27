@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { LogoutSuccessToast } from "@/components/auth/logout-success-toast";
 import { LmsNavbar } from "@/components/dashboard/lms-navbar";
 import { AppShellEnhancements } from "@/components/app-shell-enhancements";
 import { Footer } from "@/components/layout/footer";
@@ -20,10 +21,15 @@ function isLmsRoute(pathname: string) {
 export function AppChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const lmsRoute = isLmsRoute(pathname);
+  const marketingRoute =
+    /^\/(?:about|contact|career|corporate-training|summer-training|blog)(?:\/|$)/.test(pathname);
+  const showShellEnhancements = marketingRoute;
+  const showMobileStickyCta = marketingRoute;
 
   if (lmsRoute) {
     return (
       <div className="relative flex min-h-screen flex-col overflow-x-clip bg-[#f8fafc] text-[#1e293b]">
+        <LogoutSuccessToast />
         <LmsNavbar />
         <main className="flex min-h-0 flex-1 flex-col">{children}</main>
       </div>
@@ -32,11 +38,12 @@ export function AppChrome({ children }: { children: ReactNode }) {
 
   return (
     <div className="relative flex min-h-screen flex-col overflow-x-clip">
-      <AppShellEnhancements />
+      <LogoutSuccessToast />
+      {showShellEnhancements ? <AppShellEnhancements /> : null}
       <Header />
       <main className="flex-1">{children}</main>
-      <Footer />
-      <MobileStickyCta />
+      <Footer reserveMobileCtaSpace={showMobileStickyCta} />
+      {showMobileStickyCta ? <MobileStickyCta /> : null}
     </div>
   );
 }

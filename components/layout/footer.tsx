@@ -8,7 +8,7 @@ import {
   Phone,
 } from "lucide-react";
 import { Brand } from "@/components/layout/brand";
-import { courseFooterLinks, quickLinks, socialLinks } from "@/data/site";
+import { quickLinks, socialLinks } from "@/data/site";
 import { siteConfig } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
 
@@ -74,32 +74,30 @@ const socialIcons = {
   mail: Mail,
 };
 
-export function Footer() {
+export function Footer({ reserveMobileCtaSpace = false }: { reserveMobileCtaSpace?: boolean }) {
   return (
-    <footer className="mt-16 border-t border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,123,34,0.12),transparent_24%),linear-gradient(180deg,rgba(7,20,43,0.96),rgba(7,16,40,0.995))] text-[12px] text-[#CBD5E1] backdrop-blur-xl">
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 pt-12 pb-0 sm:px-6 lg:grid-cols-[2fr_1fr_1fr_1.5fr] lg:gap-12 lg:px-20 lg:pt-[60px]">
+    <footer
+      className={cn(
+        "border-t border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,123,34,0.12),transparent_24%),linear-gradient(180deg,rgba(7,20,43,0.96),rgba(7,16,40,0.995))] text-[12px] text-[#CBD5E1] backdrop-blur-xl",
+        reserveMobileCtaSpace && "pb-24 md:pb-0",
+      )}
+    >
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 pt-12 pb-0 sm:px-6 lg:grid-cols-[1.4fr_0.9fr_1.2fr] lg:gap-12 lg:px-20 lg:pt-[56px]">
         <div>
           <Brand mode="footer" />
-          <p className="mt-4 max-w-[240px] text-[13px] leading-[1.8] text-[#CBD5E1]">
-            Premium AWS, Azure, AI, DevOps, and cloud learning experiences designed for career outcomes and enterprise credibility.
+          <p className="mt-4 max-w-[280px] text-[13px] leading-[1.8] text-[#CBD5E1]">
+            Premium cloud and AI learning experiences designed to help students and professionals move faster with more confidence.
           </p>
-          <p className="mt-4 text-[11px] text-[#94A3B8]">{siteConfig.tagline}</p>
         </div>
         <div>
           <div className="mb-5 text-[11px] font-semibold uppercase tracking-[0.1em] text-white">Quick Links</div>
           <div>
             {quickLinks.map((item) => (
-              <Link key={item.href} href={item.href} className="block py-[5px] text-[13px] text-[#CBD5E1] transition-colors duration-200 hover:text-[#F97316]">
-                {item.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-        <div>
-          <div className="mb-5 text-[11px] font-semibold uppercase tracking-[0.1em] text-white">Courses</div>
-          <div>
-            {courseFooterLinks.map((item) => (
-              <Link key={item.href} href={item.href} className="block py-[5px] text-[13px] text-[#CBD5E1] transition-colors duration-200 hover:text-[#F97316]">
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex min-h-11 items-center py-2 text-[14px] text-[#CBD5E1] transition-colors duration-200 hover:text-[#F97316]"
+              >
                 {item.label}
               </Link>
             ))}
@@ -118,14 +116,14 @@ export function Footer() {
             </div>
             <a
               href={`tel:${siteConfig.phone}`}
-              className="mb-[14px] flex items-start gap-[10px] text-[13px] leading-[1.6] text-[#CBD5E1] transition-colors duration-200 hover:text-[#F97316]"
+              className="mb-[14px] flex min-h-11 items-start gap-[10px] py-1.5 text-[14px] leading-[1.6] text-[#CBD5E1] transition-colors duration-200 hover:text-[#F97316]"
             >
               <Phone className="mt-[2px] h-[15px] w-[15px] shrink-0 text-[#FF7B22]" />
               <span>{siteConfig.phone}</span>
             </a>
             <a
               href={`mailto:${siteConfig.email}`}
-              className="flex items-start gap-[10px] text-[13px] leading-[1.6] text-[#CBD5E1] transition-colors duration-200 hover:text-[#F97316]"
+              className="flex min-h-11 items-start gap-[10px] py-1.5 text-[14px] leading-[1.6] text-[#CBD5E1] transition-colors duration-200 hover:text-[#F97316]"
             >
               <Mail className="mt-[2px] h-[15px] w-[15px] shrink-0 text-[#FF7B22]" />
               <span>{siteConfig.email}</span>
@@ -142,7 +140,7 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className={cn(
-                    "inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.05)] text-[#64748b] shadow-[0_10px_24px_rgba(2,8,28,0.16)] transition-all duration-200 hover:-translate-y-0.5",
+                    "inline-flex h-11 w-11 items-center justify-center rounded-[10px] border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.05)] text-[#64748b] shadow-[0_10px_24px_rgba(2,8,28,0.16)] transition-all duration-200 hover:-translate-y-0.5",
                     item.hoverClass,
                   )}
                   aria-label={item.label}
@@ -154,16 +152,8 @@ export function Footer() {
           </div>
         </div>
       </div>
-      <div className="mx-auto mt-8 flex max-w-7xl flex-col gap-4 border-t border-[rgba(255,255,255,0.08)] px-4 py-5 shadow-[inset_0_1px_0_rgba(249,115,22,0.05)] sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-20">
-        <p className="text-[12px] text-[#94A3B8]">(c) 2026 {siteConfig.name}. All rights reserved.</p>
-        <div className="flex gap-5">
-          <Link href="/contact" className="text-[12px] text-[#CBD5E1] transition-colors duration-200 hover:text-[#F97316]">
-            Privacy Policy
-          </Link>
-          <Link href="/contact" className="text-[12px] text-[#CBD5E1] transition-colors duration-200 hover:text-[#F97316]">
-            Terms
-          </Link>
-        </div>
+      <div className="mx-auto mt-8 max-w-7xl border-t border-[rgba(255,255,255,0.08)] px-4 py-5 text-[12px] text-[#94A3B8] shadow-[inset_0_1px_0_rgba(249,115,22,0.05)] sm:px-6 lg:px-20">
+        (c) 2026 {siteConfig.name}. All rights reserved.
       </div>
     </footer>
   );

@@ -29,12 +29,16 @@ export function AddToCartButton({
     router.push("/cart");
   }
 
+  function openPurchasedCourse() {
+    router.push(`/dashboard/courses?course=${encodeURIComponent(courseSlug)}`);
+  }
+
   return (
     <button
       type="button"
       onClick={() => {
         if (isEnrolled) {
-          router.push(`/dashboard/${encodeURIComponent(courseSlug)}`);
+          openPurchasedCourse();
           return;
         }
 
@@ -54,7 +58,7 @@ export function AddToCartButton({
       className={cn(className)}
     >
       {isEnrolled ? <Check size={14} /> : <IconShoppingCart size={14} />}
-      {isEnrolled ? "Go to Course" : inCart ? "Purchase" : label}
+      {isEnrolled ? "View Course" : inCart ? "Purchase" : label}
     </button>
   );
 }

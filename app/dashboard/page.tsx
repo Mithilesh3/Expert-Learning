@@ -1,5 +1,4 @@
-import { ProtectedRouteGuard } from "@/components/auth/protected-route-guard";
-import { DashboardPanel } from "@/components/auth/dashboard-panel";
+import { redirect } from "next/navigation";
 
 type DashboardPageProps = {
   searchParams: Promise<{
@@ -12,10 +11,5 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const paymentCompleted = Array.isArray(resolvedSearchParams.payment)
     ? resolvedSearchParams.payment.includes("success")
     : resolvedSearchParams.payment === "success";
-
-  return (
-    <ProtectedRouteGuard>
-      <DashboardPanel paymentCompleted={paymentCompleted} />
-    </ProtectedRouteGuard>
-  );
+  redirect(paymentCompleted ? "/dashboard/courses?payment=success" : "/dashboard/courses");
 }

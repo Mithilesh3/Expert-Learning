@@ -122,7 +122,7 @@ export function CourseCard({
       <div className={cn("absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r", style.bar)} />
       {isEnrolled ? (
         <span className="absolute top-4 left-4 z-[1] rounded-full border border-[rgba(16,185,129,0.3)] bg-[rgba(16,185,129,0.12)] px-[10px] py-[3px] text-[10px] font-medium text-[#34d399]">
-          ✓ Enrolled
+          Enrolled
         </span>
       ) : null}
       <div className="flex items-start justify-between gap-4 pt-2">

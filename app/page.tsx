@@ -1,23 +1,13 @@
-import { CertificationSection } from "@/sections/home/certification-section";
-import { FaqSection } from "@/sections/home/faq-section";
-import { FeaturedCoursesSection } from "@/sections/home/featured-courses-section";
+import { SummerTrainingPopup } from "@/components/home/summer-training-popup";
 import { HeroSection } from "@/sections/home/hero-section";
-import { JourneySection } from "@/sections/home/journey-section";
-import { LeadCaptureSection } from "@/sections/home/lead-capture-section";
-import { PartnersSection } from "@/sections/home/partners-section";
-import { PricingSection } from "@/sections/home/pricing-section";
-import { SuccessSection } from "@/sections/home/success-section";
-import { SummerTrainingSection } from "@/sections/home/summer-training-section";
-import { WhyChooseSection } from "@/sections/home/why-choose-section";
-import { RegistrationPopup } from "@/components/summer-training/registration-popup";
-import { getCourseListSchema, getFaqSchema, getOrganizationSchema } from "@/lib/schema";
+import { StatsSection } from "@/sections/home/stats-section";
+import { getOrganizationSchema } from "@/lib/schema";
 
 export default function Home() {
-  const schemas = [getOrganizationSchema(), getCourseListSchema(), getFaqSchema()];
+  const schemas = [getOrganizationSchema()];
 
   return (
     <>
-      <RegistrationPopup />
       {schemas.map((schema, index) => (
         <script
           key={index}
@@ -25,17 +15,9 @@ export default function Home() {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
         />
       ))}
+      <SummerTrainingPopup />
       <HeroSection />
-      <SummerTrainingSection />
-      <FeaturedCoursesSection />
-      <WhyChooseSection />
-      <JourneySection />
-      <SuccessSection />
-      <PartnersSection />
-      <CertificationSection />
-      <PricingSection />
-      <FaqSection />
-      <LeadCaptureSection />
+      <StatsSection />
     </>
   );
 }

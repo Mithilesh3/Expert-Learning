@@ -21,6 +21,7 @@ import {
   latestOrderStorageKey,
   type StoredOrderSuccess,
 } from "@/lib/order-success";
+import { syncMyLearningFromInvoice } from "@/lib/my-learning";
 import { ensureRazorpayScript } from "@/lib/razorpay-browser";
 
 const gstPattern = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
@@ -256,6 +257,7 @@ export function CartCheckoutForm() {
               logFirestoreIssue("[Checkout] Unable to save phone number after payment", error);
             });
             window.localStorage.setItem(latestOrderStorageKey, JSON.stringify(verifyPayload.invoice));
+            syncMyLearningFromInvoice(verifyPayload.invoice);
             clearCart();
             window.localStorage.removeItem("cart");
             window.localStorage.setItem("cart", JSON.stringify([]));

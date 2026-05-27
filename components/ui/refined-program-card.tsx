@@ -84,7 +84,6 @@ export function RefinedProgramCard({
   icon,
   title,
   description,
-  rating,
   duration,
   level,
   price,
@@ -103,32 +102,36 @@ export function RefinedProgramCard({
   const CourseIcon = courseSlug ? courseIconMap[courseSlug] : null;
   const FallbackIcon = icon ? iconMap[icon] : null;
   const Icon = (CourseIcon || FallbackIcon) as ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
+  const purchasedCourseHref = courseSlug ? `/dashboard/courses?course=${encodeURIComponent(courseSlug)}` : "/dashboard/courses";
 
   return (
     <article
       className={cn(
-        "relative flex h-full flex-col gap-3 rounded-[14px] border border-[#1E2D42] bg-[#111827] p-[18px] transition-[border-color] duration-200 hover:border-[#F97316]",
+        "relative flex h-full flex-col gap-3 rounded-[18px] border border-[#1E2D42] bg-[linear-gradient(180deg,rgba(17,24,39,0.96),rgba(15,23,42,0.92))] p-[18px] shadow-[0_20px_44px_rgba(2,8,28,0.28)] transition-all duration-300 hover:-translate-y-1 hover:border-[#F97316] hover:shadow-[0_28px_54px_rgba(2,8,28,0.38),0_0_24px_rgba(249,115,22,0.12)]",
         featured && "border-[rgba(249,115,22,0.5)]",
-        className,
-      )}
+      className,
+    )}
     >
-      {isEnrolled ? (
-        <span className="absolute top-3 left-3 rounded-full border border-[rgba(16,185,129,0.3)] bg-[rgba(16,185,129,0.12)] px-[10px] py-[3px] text-[10px] font-medium text-[#34d399]">
-          ✓ Enrolled
-        </span>
-      ) : null}
-      <div className="flex items-start justify-between">
-        <div className="flex h-[38px] w-[38px] items-center justify-center rounded-[10px] border border-[rgba(249,115,22,0.25)] bg-[rgba(249,115,22,0.1)] text-[#F97316]">
-          <Icon size={18} strokeWidth={1.8} />
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-h-[24px]">
+          {isEnrolled ? (
+            <span className="inline-flex rounded-full border border-[rgba(16,185,129,0.3)] bg-[rgba(16,185,129,0.12)] px-[10px] py-[3px] text-[10px] font-medium text-[#34d399]">
+              Enrolled
+            </span>
+          ) : null}
         </div>
         <span className={cn("whitespace-nowrap rounded-full border px-[10px] py-[3px] text-[10px] font-medium", badgeToneClasses[badgeTone])}>
           {badgeLabel}
         </span>
       </div>
 
+      <div className="flex items-start justify-between">
+        <div className="flex h-[38px] w-[38px] items-center justify-center rounded-[10px] border border-[rgba(249,115,22,0.25)] bg-[rgba(249,115,22,0.1)] text-[#F97316]">
+          <Icon size={18} strokeWidth={1.8} />
+        </div>
+      </div>
+
       <div className="flex items-center gap-2">
-        {typeof rating === "number" ? <span className="text-[12px] font-medium text-[#F59E0B]">{rating}</span> : null}
-        <span className="h-[3px] w-[3px] rounded-full bg-[#334155]" />
         <span className="text-[11px] text-[#475569]">{duration}</span>
         <span className="h-[3px] w-[3px] rounded-full bg-[#334155]" />
         <span className="text-[11px] text-[#475569]">{level}</span>
@@ -171,10 +174,10 @@ export function RefinedProgramCard({
           />
         ) : (
           <Link
-            href={primaryHref || "/courses"}
+            href={isEnrolled ? purchasedCourseHref : primaryHref || "/courses"}
             className="inline-flex flex-1 items-center justify-center gap-[6px] whitespace-nowrap rounded-[8px] border-0 bg-[#F97316] px-0 py-[10px] text-[13px] font-medium text-white transition-all duration-200 hover:bg-[#EA580C]"
           >
-            Purchase
+            {isEnrolled ? "View Course" : "Purchase"}
           </Link>
         )}
         {secondaryExternal ? (

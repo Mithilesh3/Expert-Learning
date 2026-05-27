@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { EnrollmentForm } from "@/components/forms/enrollment-form";
 import { PageHero } from "@/components/ui/page-hero";
 import { getCourseBySlug } from "@/lib/course-catalog";
+import { AzureSummerTrainingPage } from "@/sections/enroll/azure-summer-training-page";
 
 type PageProps = {
   params: Promise<{ courseSlug: string }>;
@@ -15,14 +16,17 @@ export default async function EnrollPage({ params }: PageProps) {
     notFound();
   }
 
+  if (course.slug === "azure-administrator") {
+    return <AzureSummerTrainingPage course={course} />;
+  }
+
   return (
     <>
       <PageHero
         eyebrow="Enrollment"
         title={`Complete your enrollment for ${course.title}`}
         description={course.subtitle}
-        primaryCta={{ label: "View all courses", href: "/courses" }}
-        secondaryCta={{ label: "Talk to admissions", href: "/contact" }}
+        showCtas={false}
       />
       <section className="px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.92fr_1.08fr]">

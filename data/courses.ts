@@ -73,6 +73,56 @@ export const courseCategories = [
   },
 ] as const;
 
+export type CategoryExperienceContent = {
+  metadataDescription: string;
+  sectionEyebrow: string;
+  sectionTitle: string;
+  sectionDescription: string;
+};
+
+export const categoryExperienceContent: Record<CourseCategoryKey, CategoryExperienceContent> = {
+  aws: {
+    metadataDescription:
+      "Industry-ready AWS certification programs with hands-on labs, mentor guidance, live projects, and internship-oriented cloud learning.",
+    sectionEyebrow: "AWS Courses - Summer Training 2026",
+    sectionTitle: "Choose your AWS specialization path",
+    sectionDescription:
+      "Industry-focused certification programs designed for cloud practitioners, architects, DevOps engineers, and beginners who want practical AWS experience.",
+  },
+  azure: {
+    metadataDescription:
+      "Microsoft Azure training programs with AZ-aligned preparation, hands-on administration labs, mentor support, and enterprise cloud workflows.",
+    sectionEyebrow: "AZURE COURSES - SUMMER TRAINING 2026",
+    sectionTitle: "Choose your Microsoft Azure learning path",
+    sectionDescription:
+      "Practical Azure programs built for administrators, beginners, AI engineers, DevOps professionals, and aspiring cloud architects.",
+  },
+  ai: {
+    metadataDescription:
+      "Practical AI and Generative AI programs with hands-on projects, LLM workflows, mentor guidance, and career-focused learning support.",
+    sectionEyebrow: "AI COURSES - SUMMER TRAINING 2026",
+    sectionTitle: "Explore practical AI & Generative AI programs",
+    sectionDescription:
+      "Career-focused AI programs designed for beginners, builders, analysts, and aspiring AI engineers who want practical project experience.",
+  },
+  devops: {
+    metadataDescription:
+      "Modern DevOps programs with CI/CD, infrastructure automation, containers, mentor guidance, and enterprise delivery workflow training.",
+    sectionEyebrow: "DEVOPS COURSES - SUMMER TRAINING 2026",
+    sectionTitle: "Build automation & cloud delivery expertise",
+    sectionDescription:
+      "Hands-on programs designed for engineers and beginners who want to master CI/CD, infrastructure automation, containers, and delivery workflows.",
+  },
+};
+
+export function getCategoryExperienceContent(category: string) {
+  if (category in categoryExperienceContent) {
+    return categoryExperienceContent[category as CourseCategoryKey];
+  }
+
+  return null;
+}
+
 export const coursesByCategory: Record<CourseCategoryKey, Course[]> = {
   aws: [
     createCourse({
@@ -193,29 +243,6 @@ export const coursesByCategory: Record<CourseCategoryKey, Course[]> = {
   ],
   azure: [
     createCourse({
-      slug: "azure-administrator",
-      title: "Azure Administrator (AZ-104)",
-      subtitle: "Build practical Azure admin skills across compute, storage, networking, identity, and monitoring services.",
-      overview:
-        "A structured Azure administration program covering identity, compute, storage, networking, monitoring, and hands-on AZ-104-aligned operations practice.",
-      rating: 4.8,
-      duration: "6-8 Weeks",
-      level: "Intermediate",
-      priceValue: 8999,
-      originalPriceValue: 13999,
-      highlight: "Student-Friendly",
-      tagLabel: "Best for beginners",
-      tagTone: "green",
-      certificate: "AZ-104 Readiness + Internship Certificate",
-      category: "azure",
-      icon: "cloud",
-      tags: ["AZ-104", "Virtual Machines", "Identity", "Monitoring"],
-      officialSyllabusUrl: "https://learn.microsoft.com/en-us/certifications/azure-administrator/",
-      toolsCovered: ["Azure Portal", "Entra ID", "Azure Monitor", "Virtual Networks", "Azure Virtual Machines", "Storage Accounts"],
-      roadmap: ["Azure admin foundations", "Identity and access", "Compute and storage", "Networking and monitoring", "AZ-104 labs"],
-      outcomes: ["Administer Azure core services", "Handle identity workflows", "Operate Azure infrastructure confidently", "Prepare for AZ-104 roles"],
-    }),
-    createCourse({
       slug: "azure-fundamentals",
       title: "Azure Fundamentals (AZ-900)",
       subtitle: "Start your Azure journey with foundational cloud concepts, services, and certification preparation.",
@@ -237,6 +264,29 @@ export const coursesByCategory: Record<CourseCategoryKey, Course[]> = {
       toolsCovered: ["Azure Portal", "Compute Basics", "Storage Basics", "Security Basics", "Governance", "Pricing Calculator"],
       roadmap: ["Cloud concepts", "Azure core services", "Security and governance", "Pricing basics", "Certification prep"],
       outcomes: ["Understand Azure fundamentals", "Speak cloud basics confidently", "Prepare for AZ-900 certification", "Build a strong Azure starting point"],
+    }),
+    createCourse({
+      slug: "azure-administrator",
+      title: "Azure Administrator (AZ-104)",
+      subtitle: "Build practical Azure admin skills across compute, storage, networking, identity, and monitoring services.",
+      overview:
+        "A structured Azure administration program covering identity, compute, storage, networking, monitoring, and hands-on AZ-104-aligned operations practice.",
+      rating: 4.8,
+      duration: "6-8 Weeks",
+      level: "Intermediate",
+      priceValue: 8999,
+      originalPriceValue: 13999,
+      highlight: "Student-Friendly",
+      tagLabel: "Best for beginners",
+      tagTone: "green",
+      certificate: "AZ-104 Readiness + Internship Certificate",
+      category: "azure",
+      icon: "cloud",
+      tags: ["AZ-104", "Virtual Machines", "Identity", "Monitoring"],
+      officialSyllabusUrl: "https://learn.microsoft.com/en-us/certifications/azure-administrator/",
+      toolsCovered: ["Azure Portal", "Entra ID", "Azure Monitor", "Virtual Networks", "Azure Virtual Machines", "Storage Accounts"],
+      roadmap: ["Azure admin foundations", "Identity and access", "Compute and storage", "Networking and monitoring", "AZ-104 labs"],
+      outcomes: ["Administer Azure core services", "Handle identity workflows", "Operate Azure infrastructure confidently", "Prepare for AZ-104 roles"],
     }),
     createCourse({
       slug: "azure-ai-engineer",
@@ -327,7 +377,7 @@ export const coursesByCategory: Record<CourseCategoryKey, Course[]> = {
       category: "ai",
       icon: "sparkles",
       tags: ["GenAI", "LLMs", "RAG", "Production AI"],
-      officialSyllabusUrl: "https://platform.openai.com/docs/overview",
+      officialSyllabusUrl: "https://learn.microsoft.com/en-us/ai/playbook/technology-guidance/generative-ai/",
       toolsCovered: ["OpenAI APIs", "LangChain", "Vector Databases", "Prompt Systems", "Evaluation", "Python"],
       roadmap: ["GenAI foundations", "Prompting and LLM workflows", "Image generation", "RAG pipelines", "Production AI capstone"],
       outcomes: ["Build production-ready GenAI apps", "Design strong prompt systems", "Implement RAG workflows", "Create a high-impact AI portfolio"],

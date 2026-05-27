@@ -9,6 +9,7 @@ export function PageHero({
   description,
   primaryCta = { label: "Explore Courses", href: "/courses" },
   secondaryCta = { label: "Talk to Admissions", href: "/contact" },
+  showCtas = true,
 }: {
   eyebrow: string;
   title: string;
@@ -23,6 +24,7 @@ export function PageHero({
     modalTitle?: string;
     modalDescription?: string;
   };
+  showCtas?: boolean;
 }) {
   return (
     <section className="hero-home px-4 pt-16 pb-14 sm:px-6 sm:pt-20 lg:px-8">
@@ -35,31 +37,33 @@ export function PageHero({
             </div>
             <h1 className="mt-5 text-3xl font-bold leading-[1.2] text-white sm:text-[38px]">{title}</h1>
             <p className="mt-4 max-w-[560px] text-[15px] leading-[1.75] text-[#E2E8F0]">{description}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              {primaryCta.label === "Apply Now" ? (
-                <AuthActionButton className={buttonLinkClasses("primary")} href={primaryCta.href}>
-                  {primaryCta.label}
-                </AuthActionButton>
-              ) : (
-                <ButtonLink href={primaryCta.href}>{primaryCta.label}</ButtonLink>
-              )}
-              {secondaryCta.modalCourse || secondaryCta.modalMessage ? (
-                <DemoModalTrigger
-                  variant="secondary"
-                  course={secondaryCta.modalCourse}
-                  message={secondaryCta.modalMessage}
-                  source={secondaryCta.modalSource || secondaryCta.label}
-                  title={secondaryCta.modalTitle}
-                  description={secondaryCta.modalDescription}
-                >
-                  {secondaryCta.label}
-                </DemoModalTrigger>
-              ) : (
-                <ButtonLink href={secondaryCta.href || "/contact"} variant="secondary">
-                  {secondaryCta.label}
-                </ButtonLink>
-              )}
-            </div>
+            {showCtas ? (
+              <div className="mt-8 flex flex-wrap gap-3">
+                {primaryCta.label === "Apply Now" ? (
+                  <AuthActionButton className={buttonLinkClasses("primary")} href={primaryCta.href}>
+                    {primaryCta.label}
+                  </AuthActionButton>
+                ) : (
+                  <ButtonLink href={primaryCta.href}>{primaryCta.label}</ButtonLink>
+                )}
+                {secondaryCta.modalCourse || secondaryCta.modalMessage ? (
+                  <DemoModalTrigger
+                    variant="secondary"
+                    course={secondaryCta.modalCourse}
+                    message={secondaryCta.modalMessage}
+                    source={secondaryCta.modalSource || secondaryCta.label}
+                    title={secondaryCta.modalTitle}
+                    description={secondaryCta.modalDescription}
+                  >
+                    {secondaryCta.label}
+                  </DemoModalTrigger>
+                ) : (
+                  <ButtonLink href={secondaryCta.href || "/contact"} variant="secondary">
+                    {secondaryCta.label}
+                  </ButtonLink>
+                )}
+              </div>
+            ) : null}
           </div>
         </Reveal>
       </div>

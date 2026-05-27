@@ -4,14 +4,11 @@ import {
   courseCategories,
   coursesByCategory,
   getCategoryData,
+  getCategoryExperienceContent,
   type CourseCategoryKey,
 } from "@/data/courses";
-import { getCategorySectionHref } from "@/lib/course-catalog";
-import { PageHero } from "@/components/ui/page-hero";
 import { Reveal } from "@/components/ui/reveal";
-import { SectionHeading } from "@/components/ui/section-heading";
 import { CourseGrid } from "@/sections/shared/course-grid";
-import { CtaBand } from "@/sections/shared/cta-band";
 
 type PageProps = {
   params: Promise<{ category: string }>;
@@ -24,6 +21,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps) {
   const { category } = await params;
   const categoryData = getCategoryData(category);
+  const experienceContent = getCategoryExperienceContent(category);
 
   if (!categoryData) {
     return buildMetadata({
@@ -35,7 +33,7 @@ export async function generateMetadata({ params }: PageProps) {
 
   return buildMetadata({
     title: `${categoryData.title} | GenZNext Research & Training`,
-    description: categoryData.description,
+    description: experienceContent?.metadataDescription || categoryData.description,
     path: `/courses/${category}`,
   });
 }
@@ -43,8 +41,9 @@ export async function generateMetadata({ params }: PageProps) {
 export default async function CategoryPage({ params }: PageProps) {
   const { category } = await params;
   const categoryData = getCategoryData(category);
+  const experienceContent = getCategoryExperienceContent(category);
 
-  if (!categoryData) {
+  if (!categoryData || !experienceContent) {
     notFound();
   }
 
@@ -56,42 +55,23 @@ export default async function CategoryPage({ params }: PageProps) {
 
   return (
     <>
-      <PageHero
-        eyebrow={
-          category === "ai"
-            ? "AI Courses — Summer Training 2026"
-            : category === "devops"
-              ? "DevOps Courses — Summer Training 2026"
-              : categoryData.title
-        }
-        title={`Build momentum with ${categoryData.title.toLowerCase()}`}
-        description={categoryData.description}
-        primaryCta={{ label: "Apply Now", href: "#course-listing" }}
-        secondaryCta={{
-          label: "Book Free Demo",
-          modalCourse: categoryData.title,
-          modalMessage: `I would like a free demo for ${categoryData.title}.`,
-          modalSource: `${categoryData.title} Demo Request`,
-        }}
-      />
-      <section id="course-listing" className="scroll-mt-28 px-4 py-8 sm:px-6 lg:px-8">
+      <section id="course-listing" className="scroll-mt-24 px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-7">
         <div className="mx-auto max-w-7xl">
           <Reveal>
-            <SectionHeading
-              eyebrow={
-                category === "aws"
-                  ? "AWS Courses - Summer Training 2026"
-                  : category === "azure"
-                    ? "Azure Courses - Summer Training 2026"
-                    : category === "devops"
-                      ? "DevOps Courses - Summer Training 2026"
-                      : "AI Courses - Summer Training 2026"
-              }
-              title="Industry-relevant curriculum with certification clarity"
-              description="Learn through live classes, practical assignments, and mentor-led feedback loops tailored to this track."
-            />
+            <div className="glass-panel-dark rounded-[22px] px-4 py-4 sm:px-5 sm:py-5 lg:px-6 lg:py-5">
+              <div className="max-w-[640px]">
+                <div className="section-label">{experienceContent.sectionEyebrow}</div>
+                <h2 className="mt-2 text-2xl font-medium leading-[1.04] tracking-[-0.04em] text-white sm:text-3xl lg:text-4xl">
+                  {experienceContent.sectionTitle}
+                </h2>
+                <p className="mt-2.5 max-w-[580px] text-[13px] leading-[1.7] text-[#B6C2D7] sm:text-[14px]">
+                  {experienceContent.sectionDescription}
+                </p>
+              </div>
+            </div>
           </Reveal>
-          <div className="mt-12">
+
+          <div className="mt-5 sm:mt-6">
             <CourseGrid
               courses={courses}
               featuredSlug={featuredSlug}
@@ -100,13 +80,6 @@ export default async function CategoryPage({ params }: PageProps) {
           </div>
         </div>
       </section>
-      <CtaBand
-        title={`Want to compare ${categoryData.title} tracks before you enroll?`}
-        description="We will help you choose the right course based on your experience level, timeline, and career goals."
-        primaryHref={getCategorySectionHref(category)}
-        secondaryDemoCourse={categoryData.title}
-        secondaryDemoMessage={`I would like a demo and comparison for ${categoryData.title}.`}
-      />
     </>
   );
 }

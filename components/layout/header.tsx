@@ -8,16 +8,16 @@ import {
   IconCloud,
   IconSettingsAutomation,
 } from "@tabler/icons-react";
-import { ChevronDown, LogOut, Menu, Search, ShoppingCart, X } from "lucide-react";
+import { ChevronDown, Menu, Search, ShoppingCart, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Brand } from "@/components/layout/brand";
+import { DashboardMenu } from "@/components/layout/dashboard-menu";
 import { coursesByCategory } from "@/data/courses";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
-import { useSecureLogout } from "@/hooks/use-secure-logout";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -87,7 +87,7 @@ const megaMenuQuickLinks = [
   {
     title: "Summer Training 2026",
     description: "Live classes · July batch open",
-    href: "/summer-training",
+    href: "/enroll/azure-administrator",
     icon: "☀️",
   },
   {
@@ -96,39 +96,10 @@ const megaMenuQuickLinks = [
     href: "/corporate-training",
     icon: "🏢",
   },
-  {
-    title: "All Certifications",
-    description: "Browse full catalog",
-    href: "/courses",
-    icon: "🏆",
-  },
 ] as const;
 
 function Divider() {
   return <div className="hidden h-[26px] w-px bg-[rgba(255,255,255,0.07)] lg:block" aria-hidden="true" />;
-}
-
-function getUserInitials(source?: string | null) {
-  if (!source) {
-    return "GZ";
-  }
-
-  const cleaned = source.trim();
-
-  if (!cleaned) {
-    return "GZ";
-  }
-
-  const words = cleaned
-    .replace(/[@._-]/g, " ")
-    .split(/\s+/)
-    .filter(Boolean);
-
-  if (words.length >= 2) {
-    return `${words[0][0]}${words[1][0]}`.toUpperCase();
-  }
-
-  return cleaned.slice(0, 2).toUpperCase();
 }
 
 export function Header() {
@@ -141,17 +112,12 @@ export function Header() {
   const reducedMotion = useReducedMotion();
   const { count: cartCount, hydrated: cartHydrated } = useCart();
   const { isAuthReady, openAuthModal, user } = useAuth();
-  const secureLogout = useSecureLogout();
   const coursesTriggerRef = useRef<HTMLDivElement | null>(null);
   const coursesDropdownRef = useRef<HTMLDivElement | null>(null);
   const searchOverlayRef = useRef<HTMLDivElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   const isAuthed = isAuthReady && Boolean(user);
-  const initials = useMemo(
-    () => getUserInitials(user?.displayName || user?.email || user?.phoneNumber),
-    [user?.displayName, user?.email, user?.phoneNumber],
-  );
 
   const searchSuggestions = useMemo(
     () => [
@@ -253,12 +219,12 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-[rgba(255,255,255,0.07)] bg-[#0D1117]">
-      <div className="mx-auto flex h-16 w-full max-w-[1400px] min-w-0 items-center gap-[10px] overflow-hidden px-4 sm:px-8">
+      <div className="mx-auto flex h-16 w-full max-w-[1400px] min-w-0 items-center gap-[10px] overflow-visible px-4 sm:px-8">
         <Brand className="mr-1 self-center" />
         <Divider />
 
         <Link
-          href="/#summer-training"
+          href="/enroll/azure-administrator"
           className="hidden shrink-0 self-center whitespace-nowrap rounded-full border border-[rgba(249,115,22,0.2)] bg-[rgba(249,115,22,0.1)] px-[10px] py-[3px] text-[11px] font-medium text-[#FB923C] transition-all duration-150 ease-in-out hover:border-[rgba(249,115,22,0.3)] hover:bg-[rgba(249,115,22,0.14)] lg:inline-flex"
         >
           Summer 2026
@@ -341,22 +307,10 @@ export function Header() {
         </Link>
 
         {isAuthed ? (
-          <>
-            <Link
-              href="/dashboard"
-              className="hidden h-[34px] w-[34px] shrink-0 items-center justify-center self-center rounded-[8px] border border-[rgba(139,92,246,0.3)] bg-[rgba(139,92,246,0.15)] text-[13px] font-semibold text-[#A78BFA] transition-all duration-150 ease-in-out hover:border-[rgba(139,92,246,0.42)] hover:bg-[rgba(139,92,246,0.2)] lg:inline-flex"
-              aria-label="Open dashboard"
-            >
-              {initials}
-            </Link>
-            <button
-              type="button"
-              onClick={() => void secureLogout()}
-              className="hidden shrink-0 self-center whitespace-nowrap rounded-[8px] border-0 bg-[#F97316] px-[14px] py-[6px] text-[12px] font-medium text-white transition-all duration-150 ease-in-out hover:bg-[#EA580C] lg:inline-flex"
-            >
-              Logout
-            </button>
-          </>
+          <DashboardMenu
+            className="hidden lg:block"
+            buttonClassName="h-[34px] self-center px-3.5 py-[7px] text-[13px]"
+          />
         ) : (
           <button
             type="button"
@@ -370,7 +324,7 @@ export function Header() {
         <button
           type="button"
           onClick={() => setMobileOpen((value) => !value)}
-          className="inline-flex h-[34px] w-[34px] shrink-0 items-center justify-center self-center rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] text-[#94A3B8] transition-all duration-150 ease-in-out hover:border-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.07)] hover:text-[#F1F5F9] lg:hidden"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center self-center rounded-[10px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] text-[#94A3B8] transition-all duration-150 ease-in-out hover:border-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.07)] hover:text-[#F1F5F9] lg:hidden"
           aria-label="Toggle navigation"
         >
           {mobileOpen ? <X className="h-4.5 w-4.5" /> : <Menu className="h-4.5 w-4.5" />}
@@ -452,7 +406,7 @@ export function Header() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => handleCoursesMenuNavigation("/summer-training")}
+                    onClick={() => handleCoursesMenuNavigation("/enroll/azure-administrator")}
                     className="mt-5 rounded-[6px] bg-[#F97316] px-[14px] py-[6px] text-[11px] font-semibold text-white transition hover:bg-[#EA580C]"
                   >
                     View Summer Batch →
@@ -516,7 +470,7 @@ export function Header() {
                   <button
                     type="button"
                     onClick={() => setSearchOpen(false)}
-                    className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[8px] text-[#64748B] transition hover:bg-[rgba(255,255,255,0.05)] hover:text-[#94A3B8]"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] text-[#64748B] transition hover:bg-[rgba(255,255,255,0.05)] hover:text-[#94A3B8]"
                     aria-label="Close search"
                   >
                     <X className="h-4 w-4" />
@@ -563,7 +517,7 @@ export function Header() {
             <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
               <div className="flex items-center gap-2">
                 <Link
-                  href="/#summer-training"
+                  href="/enroll/azure-administrator"
                   onClick={() => setMobileOpen(false)}
                   className="shrink-0 rounded-full border border-[rgba(249,115,22,0.2)] bg-[rgba(249,115,22,0.1)] px-[10px] py-[3px] text-[11px] font-medium text-[#FB923C]"
                 >
@@ -572,7 +526,7 @@ export function Header() {
                 <Link
                   href="/cart"
                   onClick={() => setMobileOpen(false)}
-                  className="relative inline-flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] text-[#64748B]"
+                  className="relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] text-[#64748B]"
                   aria-label="My cart"
                 >
                   <ShoppingCart className="h-4 w-4" />
@@ -585,7 +539,7 @@ export function Header() {
                 <button
                   type="button"
                   onClick={() => setSearchOpen(true)}
-                  className="inline-flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] text-[#475569]"
+                  className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] text-[#475569]"
                   aria-label="Search courses"
                 >
                   <Search className="h-[15px] w-[15px]" />
@@ -627,14 +581,12 @@ export function Header() {
               </div>
               <div className="mt-4">
                 {isAuthed ? (
-                  <Link
-                    href="/dashboard"
-                    onClick={() => setMobileOpen(false)}
-                    className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-[8px] border border-[rgba(139,92,246,0.3)] bg-[rgba(139,92,246,0.15)] text-sm font-medium text-[#A78BFA]"
-                  >
-                    {initials}
-                    Dashboard
-                  </Link>
+                  <DashboardMenu
+                    fullWidth
+                    onNavigate={() => setMobileOpen(false)}
+                    buttonClassName="h-10 rounded-[10px] border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.04)] text-sm"
+                    panelClassName="mt-0"
+                  />
                 ) : (
                   <button
                     type="button"
@@ -648,22 +600,6 @@ export function Header() {
                   </button>
                 )}
               </div>
-
-              {isAuthed ? (
-                <div className="mt-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      void secureLogout();
-                      setMobileOpen(false);
-                    }}
-                    className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-[8px] bg-[#F97316] px-[14px] text-sm font-medium text-white"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    Logout
-                  </button>
-                </div>
-              ) : null}
             </div>
           </motion.div>
         ) : null}

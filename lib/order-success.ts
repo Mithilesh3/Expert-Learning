@@ -40,8 +40,7 @@ export function getInvoiceDashboardPath(
     paymentCompleted?: boolean;
   },
 ) {
-  const firstCourseSlug = invoice?.courses[0]?.slug;
-  const basePath = firstCourseSlug ? `/dashboard/${encodeURIComponent(firstCourseSlug)}` : "/dashboard";
+  const basePath = "/dashboard/courses";
   return options?.paymentCompleted ? `${basePath}?payment=success` : basePath;
 }
 

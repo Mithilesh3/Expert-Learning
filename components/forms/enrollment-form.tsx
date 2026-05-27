@@ -1,9 +1,22 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import type { Course } from "@/data/courses";
+import { useAuth } from "@/hooks/use-auth";
+import {
+  logFirestoreIssue,
+  saveInvoiceEnrollments,
+  saveUserWhatsappNumber,
+} from "@/lib/firebase";
+import { syncMyLearningFromInvoice } from "@/lib/my-learning";
+import {
+  getInvoiceDashboardPath,
+  latestOrderStorageKey,
+  type StoredOrderSuccess,
+} from "@/lib/order-success";
 import { ensureRazorpayScript } from "@/lib/razorpay-browser";
+import { cn } from "@/lib/utils";
 
 const initialState = {
   name: "",
@@ -11,13 +24,52 @@ const initialState = {
   phone: "",
 };
 
-export function EnrollmentForm({ course }: { course: Course }) {
+function formatPrice(value: number) {
+  return `Rs. ${value.toLocaleString("en-IN")}`;
+}
+
+function normalizePhone(value: string) {
+  return value.replace(/\D/g, "");
+}
+
+function formatPhoneForProfile(value: string) {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return "";
+  }
+
+  const digits = normalizePhone(trimmed);
+
+  if (!digits) {
+    return "";
+  }
+
+  return trimmed.startsWith("+") ? `+${digits}` : digits;
+}
+
+type EnrollmentFormProps = {
+  course: Course;
+  className?: string;
+  sectionId?: string;
+  eyebrow?: string;
+  heading?: string;
+  submitLabel?: string;
+};
+
+export function EnrollmentForm({
+  course,
+  className,
+  sectionId,
+  eyebrow = "Enrollment",
+  heading,
+  submitLabel = "Enroll Now",
+}: EnrollmentFormProps) {
   const [form, setForm] = useState(initialState);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const router = useRouter();
-
-  const amountLabel = useMemo(() => course.price, [course.price]);
+  const { user } = useAuth();
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -81,14 +133,35 @@ export function EnrollmentForm({ course }: { course: Course }) {
             }),
           });
 
-          const verifyPayload = (await verifyResponse.json()) as { success?: boolean; message?: string };
+          const verifyPayload = (await verifyResponse.json()) as {
+            success?: boolean;
+            message?: string;
+            invoice?: StoredOrderSuccess;
+          };
 
-          if (!verifyResponse.ok) {
+          if (!verifyResponse.ok || !verifyPayload.invoice) {
             setMessage(verifyPayload.message || "Payment verification failed.");
             return;
           }
 
-          router.push("/dashboard");
+          const profilePhone = formatPhoneForProfile(form.phone);
+          const dashboardPath = getInvoiceDashboardPath(verifyPayload.invoice, {
+            paymentCompleted: true,
+          });
+
+          window.localStorage.setItem(latestOrderStorageKey, JSON.stringify(verifyPayload.invoice));
+          syncMyLearningFromInvoice(verifyPayload.invoice);
+
+          if (user) {
+            void saveUserWhatsappNumber(user.uid, profilePhone).catch((error) => {
+              logFirestoreIssue("[Enrollment] Unable to save phone number after payment", error);
+            });
+            void saveInvoiceEnrollments(user, verifyPayload.invoice).catch((error) => {
+              logFirestoreIssue("[Enrollment] Enrollment sync failed after verified payment", error);
+            });
+          }
+
+          router.replace(dashboardPath);
         },
       });
 
@@ -101,13 +174,13 @@ export function EnrollmentForm({ course }: { course: Course }) {
   }
 
   return (
-    <div className="surface-form p-5 sm:p-7">
+    <div id={sectionId} className={cn("surface-form p-5 sm:p-7", className)}>
       <div className="mb-6 flex items-end justify-between gap-4 border-b border-brand-blue/10 pb-5">
         <div>
-          <div className="section-label">Enrollment</div>
-          <h3 className="mt-2 text-[22px] font-bold text-brand-text">{course.title}</h3>
+          <div className="section-label">{eyebrow}</div>
+          <h3 className="mt-2 text-[22px] font-bold text-brand-text">{heading || course.title}</h3>
         </div>
-        <div className="mono-meta text-[13px] font-bold text-brand-blue-light">{amountLabel}</div>
+        <div className="mono-meta text-[13px] font-bold text-brand-blue-light">{formatPrice(course.priceValue)}</div>
       </div>
       <form onSubmit={handleSubmit}>
         <div>
@@ -156,7 +229,7 @@ export function EnrollmentForm({ course }: { course: Course }) {
           disabled={pending}
           className="mt-5 inline-flex w-full items-center justify-center rounded-lg bg-[linear-gradient(135deg,#F97316,#FB923C)] px-5 py-[13px] text-sm font-semibold text-white shadow-[0_12px_30px_rgba(249,115,22,0.28),0_0_18px_rgba(251,146,60,0.12)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(249,115,22,0.34),0_0_24px_rgba(251,146,60,0.16)] disabled:opacity-70"
         >
-          {pending ? "Processing..." : "Proceed to Payment"}
+          {pending ? "Processing..." : submitLabel}
         </button>
       </form>
       {message && <p className="mt-4 text-sm text-brand-muted">{message}</p>}

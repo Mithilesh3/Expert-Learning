@@ -1,75 +1,73 @@
 import { ArrowRight } from "lucide-react";
-import { DemoModalTrigger } from "@/components/demo/demo-modal-trigger";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Reveal } from "@/components/ui/reveal";
-import { getHeroStats } from "@/lib/hero-stats";
 
-const techPills = ["AWS", "Azure", "AI / ML", "DevOps", "Python", "Kubernetes", "Docker"];
+const techPills = [
+  { label: "AWS" },
+  { label: "Azure" },
+  { label: "AI / ML" },
+  { label: "DevOps" },
+  { label: "Python" },
+  { label: "Kubernetes" },
+  { label: "Docker" },
+];
 
-export async function HeroSection() {
-  const stats = await getHeroStats();
-
+export function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-[#111827] px-4 pt-[54px] pb-[0px] sm:px-6 lg:px-9 lg:pt-[64px]">
-      <div
-        className="pointer-events-none absolute top-[-60px] right-[-60px] h-[280px] w-[280px] rounded-full bg-[rgba(249,115,22,0.06)]"
-        aria-hidden="true"
-      />
+    <section className="hero-home relative overflow-hidden bg-[#0d1117] px-4 py-16 sm:px-12 sm:py-20 lg:px-12 lg:pt-[80px] lg:pb-[72px]">
+      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[length:44px_44px]" />
+        <div className="absolute top-[-150px] right-[-100px] h-[500px] w-[500px] bg-[radial-gradient(circle,rgba(249,115,22,0.07)_0%,transparent_65%)]" />
+        <div className="absolute bottom-[-100px] left-[-80px] h-[400px] w-[400px] bg-[radial-gradient(circle,rgba(139,92,246,0.06)_0%,transparent_65%)]" />
+      </div>
 
-      <div className="mx-auto max-w-7xl">
+      <div className="relative z-10 mx-auto max-w-[680px] text-center">
         <Reveal>
-          <div className="mx-auto max-w-[860px] text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(249,115,22,0.18)] bg-[rgba(249,115,22,0.08)] px-4 py-1.5 text-[12px] uppercase tracking-[0.08em] text-[#FB923C]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#F97316]" />
+          <div>
+            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-[rgba(255,100,0,0.4)] bg-[rgba(255,255,255,0.03)] px-3.5 py-1.5 text-[10px] uppercase tracking-[0.12em] text-[#ff9a5c]">
+              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
               Summer 2026 Batch - Admissions Open
             </div>
 
-            <h1 className="mx-auto mt-7 max-w-[740px] text-[27px] font-semibold leading-[1.24] tracking-[-0.03em] text-[#F8FAFC] sm:text-[36px] lg:text-[44px]">
-              Choose the right Cloud, AI &amp; DevOps path for your next{" "}
+            <h1 className="mb-5 text-[38px] font-extrabold leading-[1.12] tracking-[-0.04em] text-white sm:text-[42px] lg:text-[48px]">
+              Choose the right Cloud, AI &amp;
+              <br />
+              DevOps path for your next
+              <br />
               <span className="text-[#F97316]">certification.</span>
             </h1>
 
-            <p className="mx-auto mt-5 max-w-[620px] text-[13px] leading-[1.85] text-[#7C8AA5] sm:text-[14px]">
+            <p className="mb-8 text-base leading-relaxed" style={{ color: "rgba(255,255,255,0.6)" }}>
               Explore industry-ready training programs, compare paths quickly, and move from interest to enrollment with a cleaner, faster learning experience.
             </p>
 
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+            <div className="mb-9 flex flex-wrap items-center justify-center gap-2.5">
               {techPills.map((item) => (
                 <span
-                  key={item}
-                  className="inline-flex items-center rounded-full border border-[rgba(255,255,255,0.11)] bg-[rgba(255,255,255,0.03)] px-5 py-2 text-[13px] text-[#D7E0EF] transition-colors duration-150 hover:border-[rgba(249,115,22,0.34)] hover:text-white"
+                  key={item.label}
+                  className="inline-flex items-center rounded-[24px] border border-[rgba(255,255,255,0.15)] bg-[rgba(255,255,255,0.07)] px-[18px] py-[7px] text-[13.5px] text-[#D7E0EF] backdrop-blur-xl"
                 >
-                  {item}
+                  {item.label}
                 </span>
               ))}
             </div>
 
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+            <div className="mb-11 flex justify-center">
               <ButtonLink
                 href="/courses"
-                className="rounded-[14px] border-0 bg-[#F97316] px-8 py-4 text-[17px] font-medium text-white shadow-[0_18px_40px_rgba(249,115,22,0.22)] hover:bg-[#EA580C]"
+                className="min-h-[56px] min-w-[228px] rounded-[14px] border-0 bg-[linear-gradient(135deg,#F97316,#EA580C)] px-8 py-4 text-[15px] font-semibold text-white shadow-[0_20px_44px_rgba(249,115,22,0.28),0_0_28px_rgba(249,115,22,0.16)] hover:bg-[#ea580c] hover:shadow-[0_24px_54px_rgba(249,115,22,0.34),0_0_34px_rgba(249,115,22,0.2)] sm:min-w-[240px] sm:text-[16px]"
               >
                 Explore Courses
-                <ArrowRight className="h-4.5 w-4.5" />
+                <ArrowRight className="h-4 w-4" />
               </ButtonLink>
-
-              <DemoModalTrigger
-                variant="secondary"
-                className="rounded-[14px] border border-[rgba(255,255,255,0.12)] bg-transparent px-8 py-4 text-[17px] text-[#F8FAFC] hover:border-[rgba(255,255,255,0.24)] hover:text-white"
-                source="Homepage Hero Admissions"
-                title="Talk to admissions"
-                description="Share your preferred course and we will help you pick the right learning and certification path."
-              >
-                Talk to Admissions
-              </DemoModalTrigger>
             </div>
 
-            <div className="mt-11 flex flex-wrap items-center justify-center gap-4 text-[13px] text-[#A5B4CF]">
-              <div className="flex -space-x-2">
+            <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-2 text-[11px] text-[#A5B4CF] sm:text-[13px]">
+              <div className="flex -space-x-[10px]">
                 {["RK", "AS", "RN", "NK", "VT"].map((initials, index) => (
                   <span
                     key={initials}
-                    className={`inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#111827] text-[11px] font-semibold text-white ${
+                    className={`inline-flex h-6 w-6 items-center justify-center rounded-full border-2 border-[#0f172a] text-[9px] font-semibold text-white sm:h-7 sm:w-7 sm:text-[10px] ${
                       index === 0
                         ? "bg-[#6366F1]"
                         : index === 1
@@ -85,61 +83,21 @@ export async function HeroSection() {
                   </span>
                 ))}
               </div>
-              <div>
-                <span className="font-semibold text-[#F8FAFC]">6000+</span> students enrolled
-              </div>
-              <div className="flex items-center gap-1 text-[#F59E0B]">
-                <span>★★★★★</span>
-                <span className="text-[#F8FAFC]">4.8</span>
-                <span className="text-[#A5B4CF]">average rating</span>
+              <div className="flex items-center gap-2 whitespace-nowrap">
+                <span>
+                  <span className="font-semibold text-[#F8FAFC]">500+</span> students enrolled
+                </span>
+                <span className="text-[#64748b]">·</span>
+                <span className="flex items-center gap-1">
+                  <span className="text-[#ff6a00]">★★★★★</span>
+                  <span>
+                    <span className="font-semibold text-[#F8FAFC]">4.8</span> average rating
+                  </span>
+                </span>
               </div>
             </div>
           </div>
         </Reveal>
-
-        {stats ? (
-          <Reveal>
-            <div className="mt-16 overflow-hidden rounded-t-[24px] border border-b-0 border-[rgba(255,255,255,0.08)] bg-[rgba(7,12,24,0.34)]">
-              <div className="grid grid-cols-2 sm:grid-cols-4">
-                {stats.map((item, index) => (
-                  <div
-                    key={item.label}
-                    className={`px-5 py-8 text-center border-[rgba(255,255,255,0.08)] ${
-                      index % 2 === 0 ? "border-r" : ""
-                    } ${index < 2 ? "border-b sm:border-b-0" : ""} ${index < stats.length - 1 ? "sm:border-r" : ""}`}
-                  >
-                    <div className="text-[42px] font-semibold leading-none tracking-[-0.04em] text-[#F8FAFC] sm:text-[44px]">
-                      {item.value.endsWith("+") ? (
-                        <>
-                          {item.value.replace("+", "")}
-                          <span className="text-[#F97316]">+</span>
-                        </>
-                      ) : item.value.includes("%") ? (
-                        <>
-                          {item.value.replace("%", "")}
-                          <span className="text-[#F97316]">%</span>
-                        </>
-                      ) : item.value.includes("*") ? (
-                        <>
-                          {item.value.replace("*", "")}
-                          <span className="text-[#F97316]">*</span>
-                        </>
-                      ) : (
-                        item.value
-                      )}
-                    </div>
-                    <div className="mt-3 text-[14px] text-[#8EA0BE]">{item.label}</div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex flex-col gap-3 border-t border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] px-6 py-4 text-[12px] text-[#8EA0BE] sm:flex-row sm:items-center sm:justify-between">
-                <span>Trusted by learners across cloud, AI, and DevOps programs worldwide</span>
-                <span className="text-[#F97316]">Mentor-led · Job-focused · Industry certified</span>
-              </div>
-            </div>
-          </Reveal>
-        ) : null}
       </div>
     </section>
   );
