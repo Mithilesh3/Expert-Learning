@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCoursesBySlugs, parsePriceToPaise } from "@/lib/course-catalog";
-import { getMyEnrollments } from "@/lib/firebase";
+import { getMyEnrollments, isFirestorePermissionError, logFirestoreIssue } from "@/lib/firebase";
 import { env } from "@/lib/env";
 import { getRazorpayClient } from "@/lib/services/payments";
 import { paymentCreateSchema } from "@/lib/validations";
@@ -17,20 +17,28 @@ export async function POST(request: Request) {
     }
 
     if (body.userId) {
-      const enrolledCourseIds = new Set((await getMyEnrollments(body.userId)).map((enrollment) => enrollment.courseId));
-      const duplicateCourses = courses.filter((course) => enrolledCourseIds.has(course.slug));
+      try {
+        const enrolledCourseIds = new Set((await getMyEnrollments(body.userId)).map((enrollment) => enrollment.courseId));
+        const duplicateCourses = courses.filter((course) => enrolledCourseIds.has(course.slug));
 
-      if (duplicateCourses.length > 0) {
-        return NextResponse.json(
-          {
-            success: false,
-            message:
-              duplicateCourses.length === 1
-                ? "You are already enrolled in this course."
-                : "One or more selected courses are already enrolled in your account.",
-          },
-          { status: 409 },
-        );
+        if (duplicateCourses.length > 0) {
+          return NextResponse.json(
+            {
+              success: false,
+              message:
+                duplicateCourses.length === 1
+                  ? "You are already enrolled in this course."
+                  : "One or more selected courses are already enrolled in your account.",
+            },
+            { status: 409 },
+          );
+        }
+      } catch (error) {
+        if (!isFirestorePermissionError(error)) {
+          throw error;
+        }
+
+        logFirestoreIssue("[Payment Create] Skipping server enrollment lookup", error);
       }
     }
 

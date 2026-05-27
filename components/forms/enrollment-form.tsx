@@ -6,6 +6,7 @@ import type { Course } from "@/data/courses";
 import { useAuth } from "@/hooks/use-auth";
 import {
   logFirestoreIssue,
+  saveInvoiceEnrollments,
   saveUserWhatsappNumber,
 } from "@/lib/firebase";
 import { syncMyLearningFromInvoice } from "@/lib/my-learning";
@@ -149,6 +150,7 @@ export function EnrollmentForm({
 
             const verifyPayload = (await verifyResponse.json()) as {
               success?: boolean;
+              clientSyncRequired?: boolean;
               message?: string;
               invoice?: StoredOrderSuccess;
             };
@@ -163,6 +165,10 @@ export function EnrollmentForm({
             const dashboardPath = getInvoiceDashboardPath(verifyPayload.invoice, {
               paymentCompleted: true,
             });
+
+            if (verifyPayload.clientSyncRequired) {
+              await saveInvoiceEnrollments(user, verifyPayload.invoice);
+            }
 
             window.localStorage.setItem(latestOrderStorageKey, JSON.stringify(verifyPayload.invoice));
             syncMyLearningFromInvoice(verifyPayload.invoice);

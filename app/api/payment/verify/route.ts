@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { formatPaiseToPrice, getCoursesBySlugs, parsePriceToPaise } from "@/lib/course-catalog";
 import { createInvoiceNumber, getInclusiveGstBreakup, type StoredOrderSuccess } from "@/lib/order-success";
-import { getMyEnrollments, saveEnrollmentRecord } from "@/lib/firebase";
+import {
+  getMyEnrollments,
+  isFirestorePermissionError,
+  logFirestoreIssue,
+  saveEnrollmentRecord,
+} from "@/lib/firebase";
 import { captureServerEvent } from "@/lib/services/analytics";
 import { sendEnrollmentEmail } from "@/lib/services/email";
 import { getRazorpayPaymentDetails, verifyRazorpaySignature } from "@/lib/services/payments";
@@ -13,25 +18,35 @@ export async function POST(request: Request) {
     const body = paymentVerifySchema.parse(await request.json());
     const courseSlugs = body.courseSlugs?.length ? body.courseSlugs : body.courseSlug ? [body.courseSlug] : [];
     const courses = getCoursesBySlugs(courseSlugs);
+    let clientSyncRequired = false;
 
     if (courses.length !== courseSlugs.length) {
       return NextResponse.json({ success: false, message: "One or more selected courses were not found." }, { status: 404 });
     }
 
-    const enrolledCourseIds = new Set((await getMyEnrollments(body.userId)).map((enrollment) => enrollment.courseId));
-    const duplicateCourses = courses.filter((course) => enrolledCourseIds.has(course.slug));
+    try {
+      const enrolledCourseIds = new Set((await getMyEnrollments(body.userId)).map((enrollment) => enrollment.courseId));
+      const duplicateCourses = courses.filter((course) => enrolledCourseIds.has(course.slug));
 
-    if (duplicateCourses.length > 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            duplicateCourses.length === 1
-              ? "You are already enrolled in this course."
-              : "One or more selected courses are already enrolled in your account.",
-        },
-        { status: 409 },
-      );
+      if (duplicateCourses.length > 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              duplicateCourses.length === 1
+                ? "You are already enrolled in this course."
+                : "One or more selected courses are already enrolled in your account.",
+          },
+          { status: 409 },
+        );
+      }
+    } catch (error) {
+      if (!isFirestorePermissionError(error)) {
+        throw error;
+      }
+
+      clientSyncRequired = true;
+      logFirestoreIssue("[Payment Verify] Skipping server enrollment lookup", error);
     }
 
     const signatureValid = verifyRazorpaySignature({
@@ -62,28 +77,37 @@ export async function POST(request: Request) {
         : "Razorpay";
     const enrolledAt = new Date().toISOString();
 
-    await Promise.all(
-      courses.map((course) =>
-        saveEnrollmentRecord({
-          userId: body.userId,
-          userName: body.name,
-          userPhone: body.phone,
-          userEmail: body.email || "",
-          courseId: course.slug,
-          courseName: course.title,
-          amountPaid: Math.round((parsePriceToPaise(course.price) || 0) / 100),
-          razorpayOrderId: body.razorpay_order_id,
-          razorpayPaymentId: body.razorpay_payment_id,
-          invoiceNumber,
-          enrolledAt,
-          status: "active",
-          duration: course.duration,
-          level: course.level,
-          companyName: body.companyName?.trim() || "",
-          gstNumber: body.gstNumber?.trim() || "",
-        }),
-      ),
-    );
+    try {
+      await Promise.all(
+        courses.map((course) =>
+          saveEnrollmentRecord({
+            userId: body.userId,
+            userName: body.name,
+            userPhone: body.phone,
+            userEmail: body.email || "",
+            courseId: course.slug,
+            courseName: course.title,
+            amountPaid: Math.round((parsePriceToPaise(course.price) || 0) / 100),
+            razorpayOrderId: body.razorpay_order_id,
+            razorpayPaymentId: body.razorpay_payment_id,
+            invoiceNumber,
+            enrolledAt,
+            status: "active",
+            duration: course.duration,
+            level: course.level,
+            companyName: body.companyName?.trim() || "",
+            gstNumber: body.gstNumber?.trim() || "",
+          }),
+        ),
+      );
+    } catch (error) {
+      if (!isFirestorePermissionError(error)) {
+        throw error;
+      }
+
+      clientSyncRequired = true;
+      logFirestoreIssue("[Payment Verify] Deferring enrollment save to client session", error);
+    }
 
     await Promise.allSettled([
       sendEnrollmentEmail({
@@ -133,7 +157,7 @@ export async function POST(request: Request) {
       })),
     };
 
-    return NextResponse.json({ success: true, invoice });
+    return NextResponse.json({ success: true, invoice, clientSyncRequired });
   } catch (error) {
     return NextResponse.json(
       {

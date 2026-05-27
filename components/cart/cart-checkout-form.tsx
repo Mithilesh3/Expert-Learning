@@ -10,6 +10,7 @@ import { formatPaiseToPrice } from "@/lib/course-catalog";
 import {
   getUserProfile,
   logFirestoreIssue,
+  saveInvoiceEnrollments,
   saveUserWhatsappNumber,
   type AppUserProfile,
 } from "@/lib/firebase";
@@ -246,6 +247,7 @@ export function CartCheckoutForm() {
 
             const verifyPayload = (await verifyResponse.json()) as {
               success?: boolean;
+              clientSyncRequired?: boolean;
               message?: string;
               invoice?: StoredOrderSuccess;
             };
@@ -259,6 +261,10 @@ export function CartCheckoutForm() {
             const dashboardPath = getInvoiceDashboardPath(verifyPayload.invoice, {
               paymentCompleted: true,
             });
+
+            if (verifyPayload.clientSyncRequired) {
+              await saveInvoiceEnrollments(user, verifyPayload.invoice);
+            }
 
             void saveUserWhatsappNumber(user.uid, profilePhone).catch((error) => {
               logFirestoreIssue("[Checkout] Unable to save phone number after payment", error);
