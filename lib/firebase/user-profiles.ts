@@ -53,6 +53,32 @@ export async function upsertGoogleUserProfile(user: User) {
   return mergedProfile;
 }
 
+export async function ensurePhoneUserProfile(user: User, enteredName?: string) {
+  const db = getFirebaseDb();
+
+  if (!db) {
+    return null;
+  }
+
+  const userRef = doc(db, "users", user.uid);
+  const snapshot = await getDoc(userRef);
+
+  if (snapshot.exists()) {
+    return snapshot.data() as AppUserProfile;
+  }
+
+  const profile: AppUserProfile = {
+    uid: user.uid,
+    name: enteredName?.trim() || user.displayName?.trim() || "",
+    phone: user.phoneNumber || "",
+    createdAt: new Date().toISOString(),
+    authMethod: "otp",
+  };
+
+  await setDoc(userRef, profile);
+  return profile;
+}
+
 export async function saveUserWhatsappNumber(uid: string, phone: string) {
   const db = getFirebaseDb();
 

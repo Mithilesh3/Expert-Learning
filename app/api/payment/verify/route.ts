@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { formatPaiseToPrice, getCoursesBySlugs, parsePriceToPaise } from "@/lib/course-catalog";
 import { createInvoiceNumber, getInclusiveGstBreakup, type StoredOrderSuccess } from "@/lib/order-success";
+import { saveEnrollmentRecord } from "@/lib/firebase";
 import { captureServerEvent } from "@/lib/services/analytics";
 import { sendEnrollmentEmail } from "@/lib/services/email";
 import { getRazorpayPaymentDetails, verifyRazorpaySignature } from "@/lib/services/payments";
@@ -43,6 +44,30 @@ export async function POST(request: Request) {
       paymentDetails?.method
         ? `${String(paymentDetails.method).charAt(0).toUpperCase()}${String(paymentDetails.method).slice(1)}`
         : "Razorpay";
+    const enrolledAt = new Date().toISOString();
+
+    await Promise.all(
+      courses.map((course) =>
+        saveEnrollmentRecord({
+          userId: body.userId,
+          userName: body.name,
+          userPhone: body.phone,
+          userEmail: body.email || "",
+          courseId: course.slug,
+          courseName: course.title,
+          amountPaid: Math.round((parsePriceToPaise(course.price) || 0) / 100),
+          razorpayOrderId: body.razorpay_order_id,
+          razorpayPaymentId: body.razorpay_payment_id,
+          invoiceNumber,
+          enrolledAt,
+          status: "active",
+          duration: course.duration,
+          level: course.level,
+          companyName: body.companyName?.trim() || "",
+          gstNumber: body.gstNumber?.trim() || "",
+        }),
+      ),
+    );
 
     await Promise.allSettled([
       sendEnrollmentEmail({

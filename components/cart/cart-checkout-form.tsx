@@ -10,7 +10,6 @@ import { formatPaiseToPrice } from "@/lib/course-catalog";
 import {
   getUserProfile,
   logFirestoreIssue,
-  saveInvoiceEnrollments,
   saveUserWhatsappNumber,
   type AppUserProfile,
 } from "@/lib/firebase";
@@ -69,6 +68,7 @@ export function CartCheckoutForm() {
   const [form, setForm] = useState<CheckoutFormState>(initialState);
   const [profile, setProfile] = useState<AppUserProfile | null>(null);
   const [pending, setPending] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const accountName = user?.displayName?.trim() || profile?.name?.trim() || "GenZNext Learner";
   const accountPhone = form.phone.trim();
@@ -133,6 +133,10 @@ export function CartCheckoutForm() {
     event.preventDefault();
     setMessage(null);
 
+    if (pending || isPaying) {
+      return;
+    }
+
     if (!hydrated || courses.length === 0) {
       setMessage("Your cart is empty. Add a course before checkout.");
       return;
@@ -174,6 +178,7 @@ export function CartCheckoutForm() {
     }
 
     setPending(true);
+    setIsPaying(true);
 
     try {
       const payload = {
@@ -234,6 +239,7 @@ export function CartCheckoutForm() {
               },
               body: JSON.stringify({
                 ...response,
+                userId: user.uid,
                 ...payload,
               }),
             });
@@ -246,6 +252,7 @@ export function CartCheckoutForm() {
 
             if (!verifyResponse.ok || !verifyPayload.invoice) {
               setMessage(verifyPayload.message || "Payment verification failed.");
+              setIsPaying(false);
               return;
             }
 
@@ -261,19 +268,24 @@ export function CartCheckoutForm() {
             clearCart();
             window.localStorage.removeItem("cart");
             window.localStorage.setItem("cart", JSON.stringify([]));
-            void saveInvoiceEnrollments(user, verifyPayload.invoice).catch((error) => {
-              logFirestoreIssue("[Checkout] Enrollment sync failed after verified payment", error);
-            });
+            setIsPaying(false);
             router.replace(dashboardPath);
           } catch (error) {
             setMessage(error instanceof Error ? error.message : "Unable to complete enrollment after payment.");
+            setIsPaying(false);
           }
+        },
+        modal: {
+          ondismiss: () => {
+            setIsPaying(false);
+          },
         },
       });
 
       razorpay.open();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to create checkout.");
+      setIsPaying(false);
     } finally {
       setPending(false);
     }
@@ -511,11 +523,11 @@ export function CartCheckoutForm() {
         <button
           type="submit"
           form={checkoutFormId}
-          disabled={pending}
+          disabled={pending || isPaying}
           className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-[10px] bg-[#F97316] px-4 py-[13px] text-[15px] font-semibold text-white transition hover:bg-[#EA580C] disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {pending ? (
-            "Starting Razorpay..."
+          {pending || isPaying ? (
+            "Processing..."
           ) : (
             <>
               <CreditCard className="h-4.5 w-4.5" />

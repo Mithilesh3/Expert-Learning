@@ -29,6 +29,20 @@ type EnrollmentEmailPayload = {
   enrolledAt?: string;
 };
 
+type CareerApplicationEmailPayload = {
+  roleSlug: string;
+  roleTitle: string;
+  name: string;
+  email: string;
+  phone: string;
+  location: string;
+  currentStatus: string;
+  experience: string;
+  portfolioUrl: string;
+  message: string;
+  pageUrl?: string;
+};
+
 type EmailDispatchPayload = {
   to: string | string[];
   subject: string;
@@ -360,6 +374,51 @@ export async function sendEnrollmentEmail(payload: EnrollmentEmailPayload) {
       courseLabel,
     });
   }
+
+  return { success: true };
+}
+
+export async function sendCareerApplicationEmail(payload: CareerApplicationEmailPayload) {
+  const submittedAt = formatSubmissionTimestamp();
+  const recipient = siteConfig.supportEmail;
+
+  await sendEmailOrThrow({
+    to: recipient,
+    replyTo: payload.email || undefined,
+    subject: `New Career Application ${EM_DASH} ${payload.roleTitle}`,
+    html: `
+      <div style="font-family:Arial,sans-serif;color:#0f172a;line-height:1.7">
+        <h2 style="margin:0 0 16px">New Career Application ${EM_DASH} ${escapeHtml(payload.roleTitle)}</h2>
+        <p><strong>Name:</strong> ${escapeHtml(payload.name)}</p>
+        <p><strong>Email:</strong> ${escapeHtml(payload.email)}</p>
+        <p><strong>Phone:</strong> ${escapeHtml(payload.phone)}</p>
+        <p><strong>Location:</strong> ${escapeHtml(payload.location)}</p>
+        <p><strong>Current Status:</strong> ${escapeHtml(payload.currentStatus)}</p>
+        <p><strong>Experience:</strong> ${escapeHtml(payload.experience)}</p>
+        <p><strong>Portfolio / LinkedIn:</strong> ${escapeHtml(payload.portfolioUrl || "-")}</p>
+        <p><strong>Message:</strong> ${escapeHtml(payload.message)}</p>
+        <p><strong>Role Slug:</strong> ${escapeHtml(payload.roleSlug)}</p>
+        <p><strong>Page URL:</strong> ${escapeHtml(payload.pageUrl || "-")}</p>
+        <p><strong>Submitted at:</strong> ${escapeHtml(submittedAt)}</p>
+      </div>
+    `,
+    text: [
+      `Role: ${payload.roleTitle}`,
+      `Name: ${payload.name}`,
+      `Email: ${payload.email}`,
+      `Phone: ${payload.phone}`,
+      `Location: ${payload.location}`,
+      `Current Status: ${payload.currentStatus}`,
+      `Experience: ${payload.experience}`,
+      `Portfolio / LinkedIn: ${payload.portfolioUrl || "-"}`,
+      `Message: ${payload.message}`,
+      `Role Slug: ${payload.roleSlug}`,
+      `Page URL: ${payload.pageUrl || "-"}`,
+      `Submitted at: ${submittedAt}`,
+    ].join("\n"),
+    context: "career application notification",
+    providerPreference: "gmail",
+  });
 
   return { success: true };
 }

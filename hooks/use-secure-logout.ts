@@ -8,6 +8,18 @@ import { latestOrderStorageKey } from "@/lib/order-success";
 
 export const logoutToastSessionKey = "genznext-logout-toast";
 
+const KEYS_TO_CLEAR = [
+  "genznext-cart",
+  "genznext-order",
+  "genznext-my-learning",
+  "enrolledCourses",
+  "genznext-enrolled",
+  "lastVisited",
+  CART_STORAGE_KEY,
+  latestOrderStorageKey,
+  "cart",
+];
+
 export function useSecureLogout() {
   const router = useRouter();
   const { signOutUser } = useAuth();
@@ -15,17 +27,19 @@ export function useSecureLogout() {
 
   return async function secureLogout() {
     try {
-      if (typeof window !== "undefined") {
-        window.sessionStorage.setItem(logoutToastSessionKey, "Logged out successfully");
-      }
-
       await signOutUser();
       clearCart();
+
       if (typeof window !== "undefined") {
-        window.localStorage.removeItem(CART_STORAGE_KEY);
-        window.localStorage.removeItem("cart");
-        window.localStorage.removeItem(latestOrderStorageKey);
+        KEYS_TO_CLEAR.forEach((key) => {
+          window.localStorage.removeItem(key);
+          window.sessionStorage.removeItem(key);
+        });
+
+        window.localStorage.clear();
+        window.sessionStorage.clear();
       }
+
       router.replace("/");
     } catch (error) {
       console.error("Logout failed:", error);

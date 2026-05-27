@@ -42,6 +42,7 @@ export const paymentVerifySchema = z
     razorpay_order_id: z.string().min(2),
     razorpay_payment_id: z.string().min(2),
     razorpay_signature: z.string().min(2),
+    userId: z.string().min(2),
     courseSlug: z.string().min(2).optional(),
     courseSlugs: z.array(z.string().min(2)).min(1).optional(),
     name: z.string().min(2),
@@ -62,4 +63,18 @@ export const enrollmentSchema = z.object({
   amount: z.number().int().positive().optional(),
   paymentId: z.string().optional(),
   status: z.string().default("active"),
+});
+
+export const careerApplicationSchema = z.object({
+  roleSlug: z.string().min(2),
+  roleTitle: z.string().min(2),
+  name: z.string().min(2),
+  email: z.string().email(),
+  phone: z.string().min(8),
+  location: z.string().min(2),
+  currentStatus: z.string().min(2),
+  experience: z.string().min(1),
+  portfolioUrl: z.string().url().or(z.literal("")).optional().default(""),
+  message: z.string().min(10),
+  pageUrl: z.string().optional().default(""),
 });

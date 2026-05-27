@@ -6,7 +6,6 @@ import type { Course } from "@/data/courses";
 import { useAuth } from "@/hooks/use-auth";
 import {
   logFirestoreIssue,
-  saveInvoiceEnrollments,
   saveUserWhatsappNumber,
 } from "@/lib/firebase";
 import { syncMyLearningFromInvoice } from "@/lib/my-learning";
@@ -67,14 +66,26 @@ export function EnrollmentForm({
 }: EnrollmentFormProps) {
   const [form, setForm] = useState(initialState);
   const [pending, setPending] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const router = useRouter();
-  const { user } = useAuth();
+  const { openAuthModal, user } = useAuth();
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setPending(true);
     setMessage(null);
+
+    if (pending || isPaying) {
+      return;
+    }
+
+    if (!user) {
+      openAuthModal("login", `/enroll/${encodeURIComponent(course.slug)}`);
+      return;
+    }
+
+    setPending(true);
+    setIsPaying(true);
 
     try {
       const createResponse = await fetch("/api/payment/create", {
@@ -121,53 +132,62 @@ export function EnrollmentForm({
           color: "#F97316",
         },
         handler: async (response: Record<string, string>) => {
-          const verifyResponse = await fetch("/api/payment/verify", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              ...response,
-              ...form,
-              courseSlug: course.slug,
-            }),
-          });
+          try {
+            const verifyResponse = await fetch("/api/payment/verify", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                ...response,
+                userId: user.uid,
+                ...form,
+                courseSlug: course.slug,
+              }),
+            });
 
-          const verifyPayload = (await verifyResponse.json()) as {
-            success?: boolean;
-            message?: string;
-            invoice?: StoredOrderSuccess;
-          };
+            const verifyPayload = (await verifyResponse.json()) as {
+              success?: boolean;
+              message?: string;
+              invoice?: StoredOrderSuccess;
+            };
 
-          if (!verifyResponse.ok || !verifyPayload.invoice) {
-            setMessage(verifyPayload.message || "Payment verification failed.");
-            return;
-          }
+            if (!verifyResponse.ok || !verifyPayload.invoice) {
+              setMessage(verifyPayload.message || "Payment verification failed.");
+              setIsPaying(false);
+              return;
+            }
 
-          const profilePhone = formatPhoneForProfile(form.phone);
-          const dashboardPath = getInvoiceDashboardPath(verifyPayload.invoice, {
-            paymentCompleted: true,
-          });
+            const profilePhone = formatPhoneForProfile(form.phone);
+            const dashboardPath = getInvoiceDashboardPath(verifyPayload.invoice, {
+              paymentCompleted: true,
+            });
 
-          window.localStorage.setItem(latestOrderStorageKey, JSON.stringify(verifyPayload.invoice));
-          syncMyLearningFromInvoice(verifyPayload.invoice);
+            window.localStorage.setItem(latestOrderStorageKey, JSON.stringify(verifyPayload.invoice));
+            syncMyLearningFromInvoice(verifyPayload.invoice);
 
-          if (user) {
             void saveUserWhatsappNumber(user.uid, profilePhone).catch((error) => {
               logFirestoreIssue("[Enrollment] Unable to save phone number after payment", error);
             });
-            void saveInvoiceEnrollments(user, verifyPayload.invoice).catch((error) => {
-              logFirestoreIssue("[Enrollment] Enrollment sync failed after verified payment", error);
-            });
-          }
 
-          router.replace(dashboardPath);
+            setIsPaying(false);
+            router.replace(dashboardPath);
+          } catch (error) {
+            setMessage(error instanceof Error ? error.message : "Unable to complete enrollment after payment.");
+            setIsPaying(false);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setIsPaying(false);
+          },
         },
       });
 
       razorpay.open();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to create enrollment.");
+      setIsPaying(false);
     } finally {
       setPending(false);
     }
@@ -226,10 +246,10 @@ export function EnrollmentForm({
         </div>
         <button
           type="submit"
-          disabled={pending}
+          disabled={pending || isPaying}
           className="mt-5 inline-flex w-full items-center justify-center rounded-lg bg-[linear-gradient(135deg,#F97316,#FB923C)] px-5 py-[13px] text-sm font-semibold text-white shadow-[0_12px_30px_rgba(249,115,22,0.28),0_0_18px_rgba(251,146,60,0.12)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(249,115,22,0.34),0_0_24px_rgba(251,146,60,0.16)] disabled:opacity-70"
         >
-          {pending ? "Processing..." : submitLabel}
+          {pending || isPaying ? "Processing..." : submitLabel}
         </button>
       </form>
       {message && <p className="mt-4 text-sm text-brand-muted">{message}</p>}

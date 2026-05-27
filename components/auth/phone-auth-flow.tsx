@@ -22,6 +22,7 @@ import {
   isPhoneAuthTestingEnabled,
   preparePhoneAuth,
   recaptchaContainerId,
+  ensurePhoneUserProfile,
   saveUserWhatsappNumber,
   upsertGoogleUserProfile,
 } from "@/lib/firebase";
@@ -81,6 +82,7 @@ export function PhoneAuthFlow({
   const recaptchaHostRef = useRef<HTMLDivElement | null>(null);
   const otpInputRefs = useRef<Array<HTMLInputElement | null>>([]);
   const sendOtpLockRef = useRef(false);
+  const verifyOtpLockRef = useRef(false);
   const autoVerifyRef = useRef<string | null>(null);
   const googleUserIdRef = useRef<string | null>(null);
 
@@ -91,6 +93,7 @@ export function PhoneAuthFlow({
   const [step, setStep] = useState<AuthStep>("phone");
   const [pending, setPending] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [otpError, setOtpError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [resendTimer, setResendTimer] = useState(0);
   const [rateLimitSeconds, setRateLimitSeconds] = useState(0);
@@ -112,6 +115,33 @@ export function PhoneAuthFlow({
 
     return `${countryCode}${normalizePhone(raw)}`;
   }, [countryCode, googlePhone]);
+
+  const setStepError = useCallback((message: string, targetStep: AuthStep = step) => {
+    if (targetStep === "otp") {
+      setOtpError(message);
+      setFeedback(null);
+      return;
+    }
+
+    setFeedback(message);
+    setOtpError(null);
+  }, [step]);
+
+  const clearStepErrors = useCallback(() => {
+    setFeedback(null);
+    setOtpError(null);
+  }, []);
+
+  const resetOtpInputs = useCallback((focusFirstInput = false) => {
+    setOtp(Array.from({ length: otpLength }, () => ""));
+    autoVerifyRef.current = null;
+
+    if (focusFirstInput) {
+      window.setTimeout(() => {
+        otpInputRefs.current[0]?.focus();
+      }, 40);
+    }
+  }, []);
 
   useEffect(() => {
     if (resendTimer <= 0) {
@@ -215,25 +245,25 @@ export function PhoneAuthFlow({
     const validationMessage = validatePhone();
 
     if (validationMessage) {
-      setFeedback(validationMessage);
+      setStepError(validationMessage, isResend ? "otp" : "phone");
       return;
     }
 
     if (!getFirebaseAuth()) {
-      setFeedback(
+      setStepError(
         "Firebase phone authentication is not configured yet. Add the Firebase public keys to enable OTP login.",
       );
       return;
     }
 
     if (rateLimitSeconds > 0) {
-      setFeedback(`Firebase temporarily blocked OTP requests. Try again in ${rateLimitSeconds}s.`);
+      setStepError(`Firebase temporarily blocked OTP requests. Try again in ${rateLimitSeconds}s.`, isResend ? "otp" : "phone");
       return;
     }
 
     sendOtpLockRef.current = true;
     setPending(true);
-    setFeedback(null);
+    clearStepErrors();
     setSuccessMessage(null);
 
     try {
@@ -243,7 +273,7 @@ export function PhoneAuthFlow({
       }
 
       if (isLocalPhoneAuthHost() && !isPhoneAuthTestingEnabled()) {
-        setFeedback(
+        setStepError(
           "Real Firebase phone OTP is not supported on localhost. Use Google sign-in, deploy to a real domain, or enable Firebase test phone auth for local development.",
         );
         return;
@@ -261,7 +291,8 @@ export function PhoneAuthFlow({
       confirmationResultRef.current = await signInWithPhoneNumber(auth, formattedPhone, verifier);
       console.log("[Firebase Phone Auth] OTP sent successfully");
       setStep("otp");
-      setOtp(Array.from({ length: otpLength }, () => ""));
+      setOtpError(null);
+      resetOtpInputs();
       setResendTimer(resendWindowSeconds);
       setSuccessMessage(isResend ? "A fresh OTP has been sent." : "OTP sent successfully.");
       window.setTimeout(() => {
@@ -279,15 +310,16 @@ export function PhoneAuthFlow({
       recaptchaVerifierRef.current = null;
 
       if (code === "auth/invalid-phone-number") {
-        setFeedback("Invalid phone number. Use +91XXXXXXXXXX format");
+        setStepError("Invalid phone number. Use +91XXXXXXXXXX format", isResend ? "otp" : "phone");
       } else if (code === "auth/too-many-requests") {
-        setFeedback("Too many attempts. Please try again later.");
+        setStepError("Too many attempts. Please try again later.", isResend ? "otp" : "phone");
       } else if (code === "auth/invalid-app-credential" && isLocalPhoneAuthHost()) {
-        setFeedback(
+        setStepError(
           "Firebase rejected this OTP request on localhost. Use Google sign-in, deploy to a real domain, or switch on Firebase test phone auth for local testing.",
+          isResend ? "otp" : "phone",
         );
       } else {
-        setFeedback(getFirebaseAuthErrorMessage(error));
+        setStepError(getFirebaseAuthErrorMessage(error), isResend ? "otp" : "phone");
       }
     } finally {
       sendOtpLockRef.current = false;
@@ -296,18 +328,24 @@ export function PhoneAuthFlow({
   }
 
   const verifyOtp = useCallback(async () => {
+    if (verifyOtpLockRef.current) {
+      return;
+    }
+
     if (otpCode.length !== otpLength) {
-      setFeedback("Enter the complete 6-digit OTP.");
+      setOtpError("Enter the complete 6-digit OTP.");
       return;
     }
 
     const confirmationResult = confirmationResultRef.current;
     if (!confirmationResult) {
-      setFeedback("Request a new OTP to continue.");
+      setOtpError("Request a new OTP to continue.");
       return;
     }
 
+    verifyOtpLockRef.current = true;
     setPending(true);
+    setOtpError(null);
     setFeedback(null);
 
     try {
@@ -324,15 +362,18 @@ export function PhoneAuthFlow({
         });
       }
 
+      await ensurePhoneUserProfile(result.user, fullName);
       await finishAuthSuccess("Login successful!");
     } catch (error) {
       autoVerifyRef.current = null;
       logFirebaseAuthError("verifyOtp", error);
-      setFeedback(getFirebaseAuthErrorMessage(error));
+      resetOtpInputs(true);
+      setOtpError(getFirebaseAuthErrorMessage(error));
     } finally {
+      verifyOtpLockRef.current = false;
       setPending(false);
     }
-  }, [finishAuthSuccess, fullName, logFirebaseAuthError, mode, otpCode]);
+  }, [finishAuthSuccess, fullName, logFirebaseAuthError, mode, otpCode, resetOtpInputs]);
 
   useEffect(() => {
     if (step !== "otp" || pending) {
@@ -357,6 +398,9 @@ export function PhoneAuthFlow({
     const next = [...otp];
     next[index] = digit;
     setOtp(next);
+    if (otpError) {
+      setOtpError(null);
+    }
 
     if (digit && index < otpLength - 1) {
       otpInputRefs.current[index + 1]?.focus();
@@ -383,6 +427,9 @@ export function PhoneAuthFlow({
 
     const next = Array.from({ length: otpLength }, (_, index) => pasted[index] || "");
     setOtp(next);
+    if (otpError) {
+      setOtpError(null);
+    }
     const focusIndex = Math.min(pasted.length, otpLength - 1);
     otpInputRefs.current[focusIndex]?.focus();
   }
@@ -395,14 +442,14 @@ export function PhoneAuthFlow({
 
   function resetOtpStep() {
     setStep("phone");
-    setOtp(Array.from({ length: otpLength }, () => ""));
+    resetOtpInputs();
     confirmationResultRef.current = null;
     googleUserIdRef.current = null;
     clearRecaptcha(recaptchaHostRef.current);
     recaptchaVerifierRef.current = null;
-    autoVerifyRef.current = null;
+    verifyOtpLockRef.current = false;
     setGooglePhone("");
-    setFeedback(null);
+    clearStepErrors();
     setSuccessMessage(null);
     setResendTimer(0);
   }
@@ -575,6 +622,7 @@ export function PhoneAuthFlow({
                 onChange={(event) => {
                   setFullName(event.target.value);
                   setFeedback(null);
+                  setOtpError(null);
                 }}
                 placeholder="Full name"
                 autoComplete="name"
@@ -622,6 +670,7 @@ export function PhoneAuthFlow({
                 onChange={(event) => {
                   setPhone(event.target.value);
                   setFeedback(null);
+                  setOtpError(null);
                 }}
                 placeholder={isModal ? `${countryCode} Mobile number` : "Enter your mobile number"}
                 autoComplete="tel-national"
@@ -685,6 +734,8 @@ export function PhoneAuthFlow({
                   inputMode="numeric"
                   autoComplete={index === 0 ? "one-time-code" : "off"}
                   maxLength={1}
+                  disabled={pending}
+                  aria-invalid={otpError ? "true" : "false"}
                   value={value}
                   onChange={(event) => handleOtpChange(index, event.target.value)}
                   onKeyDown={(event) => handleOtpKeyDown(index, event)}
@@ -692,6 +743,11 @@ export function PhoneAuthFlow({
                 />
               ))}
             </div>
+            {otpError ? (
+              <p className={cn("mt-2 text-sm", isModal ? "text-[#FCA5A5]" : "text-rose-600")}>
+                {otpError}
+              </p>
+            ) : null}
             <div className="mt-3 space-y-2">
               <p className={cn("text-sm", isModal ? "text-[#CBD5E1]" : "text-[#E2E8F0]")}>OTP sent to {maskedPhone}</p>
               <div className="flex flex-wrap items-center justify-between gap-3 text-[12px]">
@@ -721,7 +777,7 @@ export function PhoneAuthFlow({
           </div>
         )}
 
-        {feedback && (
+        {feedback && step !== "otp" && (
           <div
             className={cn(
               "rounded-[16px] px-4 py-3 text-sm",
@@ -850,7 +906,7 @@ export function PhoneAuthFlow({
             </>
           )}
         </div>
-        {isModal && step === "phone" ? (
+        {step === "phone" ? (
           <>
             <div className="flex items-center gap-[10px]">
               <div className="h-px flex-1 bg-[rgba(255,255,255,0.08)]" />

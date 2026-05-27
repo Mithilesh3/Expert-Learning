@@ -1,5 +1,3 @@
-"use client";
-
 import {
   addDoc,
   collection,
@@ -31,7 +29,11 @@ export type FirestoreEnrollment = {
   gstNumber?: string;
 };
 
-export async function saveInvoiceEnrollments(user: User, invoice: StoredOrderSuccess) {
+type EnrollmentWriteInput = Omit<FirestoreEnrollment, "status"> & {
+  status?: FirestoreEnrollment["status"];
+};
+
+export async function saveEnrollmentRecord(input: EnrollmentWriteInput) {
   const db = getFirebaseDb();
 
   if (!db) {
@@ -39,11 +41,20 @@ export async function saveInvoiceEnrollments(user: User, invoice: StoredOrderSuc
   }
 
   const enrollmentCollection = collection(db, "enrollments");
+
+  await addDoc(enrollmentCollection, {
+    ...input,
+    status: input.status || "active",
+    createdAt: serverTimestamp(),
+  } satisfies FirestoreEnrollment & { createdAt: unknown });
+}
+
+export async function saveInvoiceEnrollments(user: User, invoice: StoredOrderSuccess) {
   const createdAt = invoice.paidAtIso || new Date().toISOString();
 
   await Promise.all(
     invoice.courses.map((course) =>
-      addDoc(enrollmentCollection, {
+      saveEnrollmentRecord({
         userId: user.uid,
         userName: user.displayName || invoice.customer.name || "GenZNext Learner",
         userPhone: user.phoneNumber || invoice.customer.phone || "",
@@ -60,8 +71,7 @@ export async function saveInvoiceEnrollments(user: User, invoice: StoredOrderSuc
         level: course.level,
         companyName: invoice.customer.companyName || "",
         gstNumber: invoice.customer.gstNumber || "",
-        createdAt: serverTimestamp(),
-      } satisfies FirestoreEnrollment & { createdAt: unknown }),
+      }),
     ),
   );
 }

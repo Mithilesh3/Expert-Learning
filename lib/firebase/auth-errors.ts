@@ -4,7 +4,7 @@ const errorMessages: Record<string, string> = {
   "auth/invalid-phone-number": "Enter a valid mobile number with the selected country code.",
   "auth/missing-phone-number": "Enter your mobile number to continue.",
   "auth/too-many-requests": "Too many attempts were made. Please wait a little and try again.",
-  "auth/invalid-verification-code": "The OTP you entered is invalid. Please try again.",
+  "auth/invalid-verification-code": "Invalid OTP. Please enter the correct verification code.",
   "auth/invalid-verification-id": "This verification session is no longer valid. Request a fresh OTP and try again.",
   "auth/missing-verification-id": "Verification data is missing. Please request a new OTP.",
   "auth/code-expired": "That OTP has expired. Request a new one and try again.",
@@ -32,11 +32,9 @@ export function getFirebaseAuthErrorMessage(error: unknown) {
   }
 
   const code = "code" in error ? String(error.code) : "";
-  const rawMessage = "message" in error && typeof error.message === "string" ? error.message : "";
-
   if (code && errorMessages[code]) {
     return errorMessages[code];
   }
 
-  return rawMessage || fallbackMessage;
+  return fallbackMessage;
 }

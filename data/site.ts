@@ -65,7 +65,6 @@ export const quickLinks = [
   { label: "All Courses", href: "/courses" },
   { label: "About Us", href: "/about" },
   { label: "Contact Us", href: "/contact" },
-  { label: "Blog", href: "/blog" },
   { label: "Career", href: "/career" },
 ];
 
@@ -116,16 +115,19 @@ export const blogHighlights = [
 
 export const careerOpenings = [
   {
+    slug: "senior-cloud-mentor",
     title: "Senior Cloud Mentor",
     location: "Remote",
     type: "Contract",
   },
   {
+    slug: "program-success-manager",
     title: "Program Success Manager",
     location: "Bengaluru",
     type: "Full-time",
   },
   {
+    slug: "growth-marketing-associate",
     title: "Growth Marketing Associate",
     location: "Remote",
     type: "Full-time",
