@@ -3,6 +3,7 @@ import {
   type Course,
   type CourseCategoryKey,
 } from "@/data/courses";
+import { resolveCourseSlugAlias } from "@/lib/course-identity";
 import { siteConfig } from "@/lib/site-config";
 
 export type LmsCategoryKey = CourseCategoryKey | "summer-training";
@@ -56,14 +57,21 @@ export type SummerTrainingHighlight = {
 
 const programCategoryOrder: CourseCategoryKey[] = ["ai", "aws", "azure", "devops"];
 const sampleAzureLessonUrl = "https://www.youtube.com/embed/vEeAXhz0bSE";
+const fallbackCourse = allCourses[0];
 
 const courseMap = new Map(allCourses.map((course) => [course.slug, course]));
 
+function resolveCourseSlug(slug: string) {
+  return courseMap.has(slug) ? slug : resolveCourseSlugAlias(slug);
+}
+
 function requireCourse(slug: string) {
-  const course = courseMap.get(slug);
+  const resolvedSlug = resolveCourseSlug(slug);
+  const course = courseMap.get(resolvedSlug);
 
   if (!course) {
-    throw new Error(`LMS content setup is missing course data for ${slug}.`);
+    console.warn(`[LMS] Missing course data for "${slug}". Falling back to a placeholder course mapping.`);
+    return fallbackCourse;
   }
 
   return course;
@@ -321,7 +329,41 @@ export function getLmsProgramsByCategory(category: CourseCategoryKey) {
 }
 
 export function getLmsProgramBySlug(courseSlug: string) {
-  return lmsPrograms.find((program) => program.courseSlug === courseSlug) ?? null;
+  const direct = lmsPrograms.find((program) => program.courseSlug === courseSlug);
+  if (direct) {
+    return direct;
+  }
+
+  const normalized = resolveCourseSlug(courseSlug);
+  const byNormalized = lmsPrograms.find(
+    (program) => program.courseSlug === normalized || resolveCourseSlug(program.courseSlug) === normalized,
+  );
+
+  if (byNormalized) {
+    return byNormalized;
+  }
+
+  const resolvedFallbackCourse = courseMap.get(normalized) || fallbackCourse;
+  const fallbackLinks = buildProgramLinks(resolvedFallbackCourse.title);
+
+  const fallbackProgram = {
+    courseSlug,
+    category: resolvedFallbackCourse.category,
+    batchStartDate: "Coming Soon",
+    trainingDays: "Schedule updating",
+    status: "upcoming" as const,
+    mentorNote: "Course content coming soon. Our team is preparing modules, lessons, and resources for your dashboard.",
+    heroSummary: "Course content coming soon. Please check back shortly or contact support for batch details.",
+    totalClasses: 0,
+    totalResources: 0,
+    classTimeLabel: "TBA",
+    classPlatform: "TBA",
+    whatsappGroupUrl: fallbackLinks.whatsappGroupUrl,
+    liveClassUrl: fallbackLinks.liveClassUrl,
+    modules: [],
+  } satisfies LmsProgram;
+
+  return fallbackProgram;
 }
 
 export function getLmsCategoryOrder() {

@@ -1,7 +1,7 @@
 "use client";
 
 import { type User } from "firebase/auth";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc } from "firebase/firestore";
 import { getFirebaseDb } from "@/lib/firebase";
 
 export type AppUserProfile = {
@@ -12,7 +12,8 @@ export type AppUserProfile = {
   phone?: string;
   createdAt?: string;
   updatedAt?: string;
-  authMethod?: "google" | "otp";
+  authMethod?: "google" | "otp" | "password";
+  role?: "admin" | "student";
 };
 
 export async function getUserProfile(uid: string) {
@@ -104,6 +105,31 @@ export async function saveUserWhatsappNumber(uid: string, phone: string) {
 
   await updateDoc(userRef, {
     phone,
+    updatedAt: new Date().toISOString(),
+  } satisfies Partial<AppUserProfile>);
+}
+
+export async function listUserProfiles() {
+  const db = getFirebaseDb();
+  if (!db) {
+    return [] as Array<AppUserProfile & { id: string }>;
+  }
+
+  const snapshot = await getDocs(collection(db, "users"));
+  return snapshot.docs.map((item) => ({
+    id: item.id,
+    ...(item.data() as AppUserProfile),
+  }));
+}
+
+export async function updateUserRole(uid: string, role: "admin" | "student") {
+  const db = getFirebaseDb();
+  if (!db) {
+    throw new Error("Firebase Firestore is not configured for users.");
+  }
+
+  await updateDoc(doc(db, "users", uid), {
+    role,
     updatedAt: new Date().toISOString(),
   } satisfies Partial<AppUserProfile>);
 }

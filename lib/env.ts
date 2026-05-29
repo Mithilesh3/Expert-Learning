@@ -13,6 +13,17 @@ function readBooleanEnvValue(value: string | undefined) {
   return ["1", "true", "yes", "on"].includes(value.trim().toLowerCase());
 }
 
+function readCsvEnvValues(value: string | undefined) {
+  if (!value) {
+    return [] as string[];
+  }
+
+  return value
+    .split(",")
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean);
+}
+
 export const env = {
   nextPublicSiteUrl: process.env.NEXT_PUBLIC_SITE_URL || siteConfig.url,
   nextPublicFirebaseApiKey: readEnvValue(process.env.NEXT_PUBLIC_FIREBASE_API_KEY),
@@ -44,6 +55,7 @@ export const env = {
   airtableApiKey: process.env.AIRTABLE_API_KEY || "",
   airtableBaseId: process.env.AIRTABLE_BASE_ID || "",
   airtableTableName: process.env.AIRTABLE_TABLE_NAME || "Leads",
+  adminEmails: readCsvEnvValues(process.env.ADMIN_EMAILS),
 };
 
 export const hasFirebaseEnv = Boolean(

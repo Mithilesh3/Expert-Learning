@@ -676,7 +676,7 @@ export function LmsPortal({
 
   async function handleNotificationClick(notification: LmsNotification) {
     if (!notification.id.startsWith("local-")) {
-      await markNotificationRead(notification.id);
+      await markNotificationRead(userInfo.uid, notification.id);
     }
 
     setNotifications((current) =>

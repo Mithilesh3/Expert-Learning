@@ -10,20 +10,20 @@ import { RefinedProgramCard } from "@/components/ui/refined-program-card";
 
 const categoryStyles = {
   aws: {
-    bar: "from-[#F97316] via-[#FB923C] to-[#FDBA74]",
-    icon: "bg-[#F97316]/18 text-[#FDBA74]",
+    bar: "from-[#4F46E5] via-[#2563EB] to-[#7C3AED]",
+    icon: "bg-[#4F46E5]/18 text-[#7C3AED]",
   },
   azure: {
-    bar: "from-[#F97316] via-[#FB923C] to-[#FDBA74]",
-    icon: "bg-[#F97316]/18 text-[#FDBA74]",
+    bar: "from-[#4F46E5] via-[#2563EB] to-[#7C3AED]",
+    icon: "bg-[#4F46E5]/18 text-[#7C3AED]",
   },
   ai: {
-    bar: "from-[#F97316] via-[#FB923C] to-[#FDBA74]",
-    icon: "bg-[#F97316]/18 text-[#FDBA74]",
+    bar: "from-[#4F46E5] via-[#2563EB] to-[#7C3AED]",
+    icon: "bg-[#4F46E5]/18 text-[#7C3AED]",
   },
   devops: {
-    bar: "from-[#F97316] via-[#FB923C] to-[#FDBA74]",
-    icon: "bg-[#F97316]/18 text-[#FDBA74]",
+    bar: "from-[#4F46E5] via-[#2563EB] to-[#7C3AED]",
+    icon: "bg-[#4F46E5]/18 text-[#7C3AED]",
   },
 } as const;
 
@@ -114,8 +114,8 @@ export function CourseCard({
   return (
     <article
       className={cn(
-        "surface-card group relative flex h-full flex-col overflow-hidden rounded-[24px] p-5 transition-all duration-300",
-        "hover:-translate-y-1 hover:border-[#FB923C]/46 hover:bg-white/[0.09] hover:shadow-[0_24px_52px_rgba(2,8,28,0.46)]",
+        "surface-card group relative flex h-full flex-col overflow-hidden rounded-[16px] p-5 transition-all duration-300",
+        "border border-[rgba(226,232,240,0.8)] bg-[rgba(255,255,255,0.96)] shadow-[0_10px_30px_rgba(15,23,42,0.08)] hover:-translate-y-1 hover:border-[#4F46E5]/30 hover:shadow-[0_20px_40px_rgba(15,23,42,0.12)]",
         featured && "pulse-border",
       )}
     >
@@ -132,44 +132,44 @@ export function CourseCard({
         <span
           className={cn(
             "rounded-full border px-2.5 py-1 text-[10px] font-semibold",
-            popular ? "border-[#FB923C]/30 bg-[#F97316]/12 text-[#FDBA74]" : "border-white/14 bg-white/6 text-[#E2E8F0]",
+            popular ? "border-[#4F46E5]/30 bg-[#EEF2FF] text-[#4F46E5]" : "border-[#E2E8F0] bg-[#F8FAFC] text-[#475569]",
           )}
         >
           {course.highlight}
         </span>
       </div>
-      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] text-[#E2E8F0]">
+      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] text-[#475569]">
         <span className="mono-meta inline-flex items-center gap-1">
-          <Star className="h-3.5 w-3.5 fill-[#F97316] text-[#F97316]" />
+          <Star className="h-3.5 w-3.5 fill-[#4F46E5] text-[#4F46E5]" />
           {course.rating}
         </span>
         <span className="mono-meta inline-flex items-center gap-1">
-          <Clock3 className="h-3.5 w-3.5 text-[#F97316]" />
+          <Clock3 className="h-3.5 w-3.5 text-[#4F46E5]" />
           {course.duration}
         </span>
         <span className="mono-meta">{course.level}</span>
       </div>
-      <h3 className="mt-4 text-[15px] font-semibold leading-6 text-white">{course.title}</h3>
-      <p className="mt-3 min-h-[68px] text-[13px] leading-[1.75] text-[#E2E8F0]">{course.subtitle}</p>
+      <h3 className="mt-4 text-[15px] font-bold leading-6 text-[#0F172A]">{course.title}</h3>
+      <p className="mt-3 min-h-[68px] text-[13px] leading-[1.75] text-[#475569]">{course.subtitle}</p>
       <div className="mt-4 flex flex-wrap gap-2">
         {course.tags.map((tag) => (
           <span
             key={tag}
-            className="mono-tag rounded-full border border-[#FB923C]/26 bg-[#F97316]/12 px-2.5 py-1 text-[11px] text-[#FDBA74]"
+            className="mono-tag rounded-full border border-[#E2E8F0] bg-[#F8FAFC] px-2.5 py-1 text-[11px] text-[#475569]"
           >
             {tag}
           </span>
         ))}
       </div>
-      <div className="mt-6 flex items-end justify-between gap-4 border-t border-white/10 pt-4">
+      <div className="mt-6 flex items-end justify-between gap-4 border-t border-[#E2E8F0] pt-4">
         <div>
           <div className="inline-flex items-center rounded-full border border-[rgba(16,185,129,0.2)] bg-[rgba(16,185,129,0.1)] px-2 py-[2px] text-[10px] text-[#34d399]">
             🏷 Launch Offer
           </div>
-          <div className="mono-meta mt-2 text-[12px] text-[#475569] line-through">{course.originalPrice}</div>
-          <div className="mono-meta mt-1 text-[18px] font-semibold text-[#f97316]">{course.price}</div>
+          <div className="mono-meta mt-2 text-[12px] text-[#94A3B8] line-through">{course.originalPrice}</div>
+          <div className="mono-meta mt-1 text-[18px] font-bold text-[#4F46E5]">{course.price}</div>
         </div>
-        <div className="mono-meta text-[11px] text-[#E2E8F0]">{course.duration}</div>
+        <div className="mono-meta text-[11px] text-[#475569]">{course.duration}</div>
       </div>
       <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <AddToCartButton
@@ -188,12 +188,12 @@ export function CourseCard({
             href={course.officialSyllabusUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-[#FB923C]/34 bg-white/6 px-4 py-2.5 text-[12px] font-semibold text-[#FDBA74] shadow-[0_10px_24px_rgba(249,115,22,0.08)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#F97316] hover:bg-[#F97316] hover:text-white hover:shadow-[0_16px_32px_rgba(249,115,22,0.18)] sm:flex-initial"
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-[#E2E8F0] bg-white px-4 py-2.5 text-[12px] font-semibold text-[#4F46E5] shadow-[0_8px_20px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#4F46E5] hover:bg-[#EEF2FF] hover:text-[#4338CA] sm:flex-initial"
           >
             View Syllabus
             <ExternalLink className="h-3.5 w-3.5" />
           </a>
-          <ArrowUpRight className="hidden h-[18px] w-[18px] text-[#FDBA74] transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 sm:block" />
+          <ArrowUpRight className="hidden h-[18px] w-[18px] text-[#4F46E5] transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 sm:block" />
         </div>
       </div>
     </article>

@@ -81,8 +81,15 @@ export function getFirebaseDb() {
 }
 
 export * from "./firebase/auth-errors";
+export * from "./firebase/courses";
 export * from "./firebase/enrollments";
 export * from "./firebase/firestore-errors";
+export * from "./firebase/leads";
+export * from "./firebase/lessons";
 export * from "./firebase/lms-activity";
+export * from "./firebase/modules";
+export * from "./firebase/payments";
 export * from "./firebase/phone-auth";
+export * from "./firebase/progress";
+export * from "./firebase/resources";
 export * from "./firebase/user-profiles";

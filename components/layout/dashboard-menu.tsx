@@ -93,13 +93,13 @@ export function DashboardMenu({
         aria-expanded={open}
         aria-haspopup="menu"
         className={cn(
-          "inline-flex items-center gap-2 rounded-[12px] border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.03)] px-3.5 py-2 text-sm font-medium text-white shadow-[0_0_0_rgba(249,115,22,0)] backdrop-blur-xl transition-all duration-200 hover:border-[rgba(249,115,22,0.28)] hover:bg-[rgba(255,255,255,0.06)] hover:shadow-[0_0_24px_rgba(249,115,22,0.14)]",
+          "inline-flex h-12 items-center gap-2 rounded-[14px] border border-[#E2E8F0] bg-white px-[18px] text-sm font-medium text-[#0F172A] shadow-[0_4px_14px_rgba(15,23,42,0.05)] transition-all duration-200 hover:border-[#CBD5E1] hover:bg-[#F8FAFC]",
           fullWidth && "w-full justify-between",
           buttonClassName,
         )}
       >
         <span>Dashboard</span>
-        <ChevronDown className={cn("h-4 w-4 text-[#FDBA74] transition-transform duration-200", open && "rotate-180")} />
+        <ChevronDown className={cn("h-4 w-4 text-[#64748B] transition-transform duration-200", open && "rotate-180")} />
       </button>
 
       <AnimatePresence>
@@ -108,7 +108,7 @@ export function DashboardMenu({
             initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.98 }}
             animate={reducedMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
             exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.98 }}
-            transition={{ duration: reducedMotion ? 0.1 : 0.16, ease: "easeOut" }}
+            transition={{ duration: reducedMotion ? 0.1 : 0.18, ease: "easeOut" }}
             className={cn(
               "absolute top-[110%] z-[9999] pointer-events-auto",
               fullWidth ? "left-0 right-0" : "min-w-[200px]",
@@ -118,7 +118,7 @@ export function DashboardMenu({
             <div
               role="menu"
               className={cn(
-                "overflow-hidden rounded-[18px] border border-[rgba(255,255,255,0.12)] bg-[linear-gradient(180deg,rgba(12,19,35,0.92),rgba(12,19,35,0.82))] p-2 shadow-[0_24px_60px_rgba(2,6,23,0.42)] backdrop-blur-2xl",
+                "min-w-[240px] overflow-hidden rounded-[18px] border border-[rgba(226,232,240,0.9)] bg-[rgba(255,255,255,0.96)] p-2.5 shadow-[0_20px_50px_rgba(15,23,42,0.12)] backdrop-blur-[16px]",
                 panelClassName,
               )}
             >
@@ -133,14 +133,14 @@ export function DashboardMenu({
                     onClick={() => handleNavigate(item.href)}
                     role="menuitem"
                     className={cn(
-                      "relative z-10 flex w-full cursor-pointer items-center justify-between gap-3 rounded-[12px] px-3.5 py-3 text-left text-sm text-[#D8E1F0] transition-all duration-150 pointer-events-auto",
+                      "relative z-10 flex h-12 w-full cursor-pointer items-center justify-between gap-3 rounded-[12px] px-[14px] text-left text-sm text-[#0F172A] transition-all duration-200 ease-out pointer-events-auto",
                       active
-                        ? "bg-[rgba(249,115,22,0.12)] text-[#FDBA74]"
-                        : "hover:bg-[rgba(249,115,22,0.1)] hover:text-[#FDBA74]",
+                        ? "bg-[rgba(99,102,241,0.10)] font-semibold text-[#4F46E5]"
+                        : "hover:bg-[rgba(99,102,241,0.08)] hover:text-[#4F46E5]",
                     )}
                   >
                     <span className="inline-flex items-center gap-2.5">
-                      <Icon className="h-4 w-4" />
+                      <Icon className={cn("h-[15px] w-[15px] transition-colors duration-200", active ? "text-[#4F46E5]" : "text-[#64748B]")} />
                       {item.label}
                     </span>
                     <span className="h-1.5 w-1.5 rounded-full bg-current opacity-55" />
@@ -148,15 +148,15 @@ export function DashboardMenu({
                 );
               })}
 
-              <div className="my-2 h-px bg-[rgba(255,255,255,0.08)]" />
+              <div className="my-2 h-px bg-[#E2E8F0]" />
 
               <button
                 type="button"
                 onClick={() => void handleLogout()}
                 role="menuitem"
-                className="relative z-10 flex w-full cursor-pointer items-center gap-2.5 rounded-[12px] px-3.5 py-3 text-sm text-[#D8E1F0] transition-all duration-150 pointer-events-auto hover:bg-[rgba(249,115,22,0.1)] hover:text-[#FDBA74]"
+                className="relative z-10 flex h-12 w-full cursor-pointer items-center gap-2.5 rounded-[12px] px-[14px] text-sm text-[#0F172A] transition-all duration-200 pointer-events-auto hover:bg-rose-50 hover:text-rose-600"
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut className="h-[15px] w-[15px] text-[#64748B]" />
                 Logout
               </button>
             </div>

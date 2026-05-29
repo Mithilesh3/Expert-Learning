@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useEnrolledCourseIds } from "@/hooks/use-enrolled-course-ids";
+import { expandRequestedCourseSlugs } from "@/lib/offering-catalog";
 import { cn } from "@/lib/utils";
 
 type CourseCheckoutGuardProps = {
@@ -15,7 +16,12 @@ type CourseCheckoutGuardProps = {
 export function CourseCheckoutGuard({ courseSlug, children, className }: CourseCheckoutGuardProps) {
   const { user, isAuthReady } = useAuth();
   const { enrolledCourseIds, loading } = useEnrolledCourseIds();
-  const isEnrolled = Boolean(user && enrolledCourseIds.includes(courseSlug));
+  const requiredCourseSlugs = expandRequestedCourseSlugs([courseSlug]);
+  const isEnrolled = Boolean(
+    user
+    && requiredCourseSlugs.length > 0
+    && requiredCourseSlugs.every((slug) => enrolledCourseIds.includes(slug)),
+  );
 
   if (!isAuthReady || (user && loading)) {
     return (

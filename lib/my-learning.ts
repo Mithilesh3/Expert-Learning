@@ -1,4 +1,6 @@
 import { getCourseBySlug } from "@/lib/course-catalog";
+import { getCourseSlugByCourseId } from "@/lib/course-identity";
+import { dedupeCourseSlugRecords } from "@/lib/enrollment-utils";
 import type { StoredOrderSuccess } from "@/lib/order-success";
 
 export const myLearningStorageKey = "genznext-my-learning";
@@ -43,11 +45,12 @@ function sanitizeProgress(value: number | undefined) {
 }
 
 function normalizeEnrolledCourse(input: Partial<EnrolledCourse> & { title?: string; courseSlug?: string; id?: string }) {
-  const courseSlug = typeof input.courseSlug === "string" && input.courseSlug
+  const rawCourseSlug = typeof input.courseSlug === "string" && input.courseSlug
     ? input.courseSlug
     : typeof input.id === "string" && input.id
       ? input.id
       : "";
+  const courseSlug = getCourseSlugByCourseId(rawCourseSlug);
 
   if (!courseSlug || typeof input.title !== "string" || !input.title) {
     return null;
@@ -115,28 +118,34 @@ export function readEnrolledCourses() {
   const parsed = readStoredJson<Array<Partial<EnrolledCourse>>>(enrolledCoursesStorageKey);
 
   if (Array.isArray(parsed)) {
-    return parsed
+    return dedupeCourseSlugRecords(
+      parsed
       .map((item) => normalizeEnrolledCourse(item))
       .filter((item): item is EnrolledCourse => Boolean(item))
-      .sort((left, right) => new Date(right.enrolledAt).getTime() - new Date(left.enrolledAt).getTime());
+      .sort((left, right) => new Date(right.enrolledAt).getTime() - new Date(left.enrolledAt).getTime()),
+      "Duplicate local enrolled course records detected.",
+    );
   }
 
-  return readLegacyMyLearningCourses()
-    .map((course) =>
-      normalizeEnrolledCourse({
-        id: course.id,
-        courseSlug: course.courseSlug,
-        title: course.title,
-        batch: course.batchLabel,
-        status: course.status,
-        enrolledAt: course.enrolledAt,
-        duration: course.duration,
-        level: course.level,
-        syllabusUrl: course.syllabusUrl,
-        progress: course.progress,
-      }),
-    )
-    .filter((item): item is EnrolledCourse => Boolean(item));
+  return dedupeCourseSlugRecords(
+    readLegacyMyLearningCourses()
+      .map((course) =>
+        normalizeEnrolledCourse({
+          id: course.id,
+          courseSlug: course.courseSlug,
+          title: course.title,
+          batch: course.batchLabel,
+          status: course.status,
+          enrolledAt: course.enrolledAt,
+          duration: course.duration,
+          level: course.level,
+          syllabusUrl: course.syllabusUrl,
+          progress: course.progress,
+        }),
+      )
+      .filter((item): item is EnrolledCourse => Boolean(item)),
+    "Duplicate legacy My Learning records detected.",
+  );
 }
 
 export function readEnrolledCourseSlugs() {
@@ -175,10 +184,13 @@ export function saveEnrolledCourses(courses: EnrolledCourse[]) {
     return courses;
   }
 
-  const normalized = courses
+  const normalized = dedupeCourseSlugRecords(
+    courses
     .map((course) => normalizeEnrolledCourse(course))
     .filter((course): course is EnrolledCourse => Boolean(course))
-    .sort((left, right) => new Date(right.enrolledAt).getTime() - new Date(left.enrolledAt).getTime());
+    .sort((left, right) => new Date(right.enrolledAt).getTime() - new Date(left.enrolledAt).getTime()),
+    "Duplicate local enrollment writes detected.",
+  );
 
   window.localStorage.setItem(enrolledCoursesStorageKey, JSON.stringify(normalized));
   writeLegacyMyLearningCourses(normalized);
@@ -211,12 +223,13 @@ export function syncMyLearningFromInvoice(invoice: StoredOrderSuccess) {
   const courseMap = new Map(existing.map((course) => [course.courseSlug, course]));
 
   for (const line of invoice.courses) {
-    const course = getCourseBySlug(line.slug);
-    const previous = courseMap.get(line.slug);
+    const normalizedCourseSlug = getCourseSlugByCourseId(line.slug);
+    const course = getCourseBySlug(normalizedCourseSlug);
+    const previous = courseMap.get(normalizedCourseSlug);
 
-    courseMap.set(line.slug, {
-      id: previous?.id || line.slug,
-      courseSlug: line.slug,
+    courseMap.set(normalizedCourseSlug, {
+      id: previous?.id || normalizedCourseSlug,
+      courseSlug: normalizedCourseSlug,
       title: course?.title || line.title,
       batch: "Summer 2026",
       status: "Active",

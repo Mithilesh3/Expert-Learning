@@ -1,99 +1,73 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, BookOpen, CheckCircle2, GraduationCap, Layers3 } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Reveal } from "@/components/ui/reveal";
 
-const techPills = [
-  { label: "AWS" },
-  { label: "Azure" },
-  { label: "AI / ML" },
-  { label: "DevOps" },
-  { label: "Python" },
-  { label: "Kubernetes" },
-  { label: "Docker" },
-];
+const trackChips = ["AI", "GenAI", "Agentic AI", "DevSecOps", "AWS", "Azure"];
 
 export function HeroSection() {
   return (
-    <section className="hero-home relative overflow-hidden bg-[#0d1117] px-4 py-16 sm:px-12 sm:py-20 lg:px-12 lg:pt-[80px] lg:pb-[72px]">
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[length:44px_44px]" />
-        <div className="absolute top-[-150px] right-[-100px] h-[500px] w-[500px] bg-[radial-gradient(circle,rgba(249,115,22,0.07)_0%,transparent_65%)]" />
-        <div className="absolute bottom-[-100px] left-[-80px] h-[400px] w-[400px] bg-[radial-gradient(circle,rgba(139,92,246,0.06)_0%,transparent_65%)]" />
-      </div>
+    <section className="relative overflow-hidden px-4 pb-10 pt-10 sm:px-6 sm:pt-14 lg:px-8 lg:pt-18">
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,rgba(79,70,229,0.08),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(37,99,235,0.05),transparent_35%),linear-gradient(180deg,#FFFFFF_0%,#F8FAFC_100%)]" />
+      <div className="absolute inset-0 -z-10 bg-[linear-gradient(rgba(15,23,42,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.02)_1px,transparent_1px)] bg-[length:56px_56px]" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_18%,rgba(79,70,229,0.1),transparent_44%)]" />
 
-      <div className="relative z-10 mx-auto max-w-[680px] text-center">
+      <div className="mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10">
         <Reveal>
-          <div>
-            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-[rgba(255,100,0,0.4)] bg-[rgba(255,255,255,0.03)] px-3.5 py-1.5 text-[10px] uppercase tracking-[0.12em] text-[#ff9a5c]">
-              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
-              Summer 2026 Batch - Admissions Open
-            </div>
-
-            <h1 className="mb-5 text-[38px] font-extrabold leading-[1.12] tracking-[-0.04em] text-white sm:text-[42px] lg:text-[48px]">
-              Choose the right Cloud, AI &amp;
-              <br />
-              DevOps path for your next
-              <br />
-              <span className="text-[#F97316]">certification.</span>
+          <div className="rounded-2xl bg-[rgba(255,255,255,0.58)] p-1 backdrop-blur-[2px]">
+            <p className="inline-flex items-center gap-2 rounded-full border border-[#E2E8F0] bg-white/85 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#64748B]">
+              <span className="h-2 w-2 rounded-full bg-[#4F46E5]" />
+              GenZNext Research & Training
+            </p>
+            <h1 className="mt-5 max-w-[18ch] text-[36px] font-extrabold leading-[1.08] tracking-[-0.04em] text-[#0F172A] sm:text-5xl lg:text-[64px]">
+              Master AI, Generative AI, Agentic AI, DevSecOps, AWS & Azure Certifications
             </h1>
-
-            <p className="mb-8 text-base leading-relaxed" style={{ color: "rgba(255,255,255,0.6)" }}>
-              Explore industry-ready training programs, compare paths quickly, and move from interest to enrollment with a cleaner, faster learning experience.
+            <p className="mt-4 max-w-[650px] text-[15px] leading-[1.8] text-[#475569] sm:text-[18px]">
+              Build job-ready skills through mentor-led programs, certification-focused learning paths, prerecorded lessons, and official cloud learning resources.
             </p>
 
-            <div className="mb-9 flex flex-wrap items-center justify-center gap-2.5">
-              {techPills.map((item) => (
-                <span
-                  key={item.label}
-                  className="inline-flex items-center rounded-[24px] border border-[rgba(255,255,255,0.15)] bg-[rgba(255,255,255,0.07)] px-[18px] py-[7px] text-[13.5px] text-[#D7E0EF] backdrop-blur-xl"
-                >
-                  {item.label}
+            <div className="mt-5 flex flex-wrap gap-2">
+              {trackChips.map((chip) => (
+                <span key={chip} className="rounded-full border border-[#E2E8F0] bg-white px-3 py-1.5 text-xs font-medium text-[#475569] shadow-[0_4px_14px_rgba(15,23,42,0.06)]">
+                  {chip}
                 </span>
               ))}
             </div>
 
-            <div className="mb-11 flex justify-center">
+            <div className="mt-7 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-3">
               <ButtonLink
                 href="/courses"
-                className="min-h-[56px] min-w-[228px] rounded-[14px] border-0 bg-[linear-gradient(135deg,#F97316,#EA580C)] px-8 py-4 text-[15px] font-semibold text-white shadow-[0_20px_44px_rgba(249,115,22,0.28),0_0_28px_rgba(249,115,22,0.16)] hover:bg-[#ea580c] hover:shadow-[0_24px_54px_rgba(249,115,22,0.34),0_0_34px_rgba(249,115,22,0.2)] sm:min-w-[240px] sm:text-[16px]"
+                className="min-h-12 w-full rounded-xl bg-[linear-gradient(135deg,#4F46E5,#2563EB)] px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(79,70,229,0.28)] transition duration-200 hover:scale-[1.02] hover:shadow-[0_20px_40px_rgba(79,70,229,0.36)] sm:w-auto"
               >
                 Explore Courses
                 <ArrowRight className="h-4 w-4" />
               </ButtonLink>
+              <ButtonLink
+                href="/lms"
+                variant="navGhost"
+                className="min-h-12 w-full rounded-xl border border-[#CBD5E1] bg-white px-6 py-3 text-sm font-semibold text-[#0F172A] hover:bg-[#F8FAFC] sm:w-auto"
+              >
+                Open LMS Portal
+              </ButtonLink>
             </div>
+          </div>
+        </Reveal>
 
-            <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-2 text-[11px] text-[#A5B4CF] sm:text-[13px]">
-              <div className="flex -space-x-[10px]">
-                {["RK", "AS", "RN", "NK", "VT"].map((initials, index) => (
-                  <span
-                    key={initials}
-                    className={`inline-flex h-6 w-6 items-center justify-center rounded-full border-2 border-[#0f172a] text-[9px] font-semibold text-white sm:h-7 sm:w-7 sm:text-[10px] ${
-                      index === 0
-                        ? "bg-[#6366F1]"
-                        : index === 1
-                          ? "bg-[#059669]"
-                          : index === 2
-                            ? "bg-[#EF4444]"
-                            : index === 3
-                              ? "bg-[#F97316]"
-                              : "bg-[#0EA5E9]"
-                    }`}
-                  >
-                    {initials}
-                  </span>
+        <Reveal delay={0.05}>
+          <div className="rounded-3xl border border-[rgba(226,232,240,0.9)] bg-[rgba(255,255,255,0.92)] p-5 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur-[12px] sm:p-6">
+            <div className="rounded-2xl border border-[#E2E8F0] bg-white/90 p-5">
+              <h2 className="text-lg font-semibold text-[#0F172A]">Learning Experience Stack</h2>
+              <div className="mt-4 space-y-3">
+                {[
+                  { icon: GraduationCap, label: "Certification Tracks", tone: "text-[#4F46E5]" },
+                  { icon: Layers3, label: "LMS Portal", tone: "text-[#2563EB]" },
+                  { icon: BookOpen, label: "YouTube Lessons", tone: "text-[#7C3AED]" },
+                  { icon: CheckCircle2, label: "Official Microsoft/AWS Resources", tone: "text-[#16A34A]" },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center gap-3 rounded-xl border border-[#E2E8F0] bg-white px-3 py-2.5 transition duration-200 hover:bg-[#F8FAFC] hover:shadow-[0_10px_25px_rgba(15,23,42,0.06)]">
+                    <item.icon className={`h-4 w-4 ${item.tone}`} />
+                    <span className="text-sm text-[#475569]">{item.label}</span>
+                  </div>
                 ))}
-              </div>
-              <div className="flex items-center gap-2 whitespace-nowrap">
-                <span>
-                  <span className="font-semibold text-[#F8FAFC]">500+</span> students enrolled
-                </span>
-                <span className="text-[#64748b]">·</span>
-                <span className="flex items-center gap-1">
-                  <span className="text-[#ff6a00]">★★★★★</span>
-                  <span>
-                    <span className="font-semibold text-[#F8FAFC]">4.8</span> average rating
-                  </span>
-                </span>
               </div>
             </div>
           </div>

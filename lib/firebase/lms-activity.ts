@@ -49,7 +49,7 @@ export async function getCompletedLessons(userId: string) {
     return new Set<string>();
   }
 
-  const snapshot = await getDocs(collection(db, "enrollments", userId, "progress"));
+  const snapshot = await getDocs(collection(db, "lms-activity", userId, "progress"));
   return new Set(
     snapshot.docs
       .filter((item) => item.data().status === "completed")
@@ -65,7 +65,7 @@ export async function markLessonCompleted(userId: string, lessonId: string) {
   }
 
   await setDoc(
-    doc(db, "enrollments", userId, "progress", lessonId),
+    doc(db, "lms-activity", userId, "progress", lessonId),
     {
       status: "completed" satisfies LessonProgressState,
       completedAt: serverTimestamp(),
@@ -81,7 +81,7 @@ export async function getLastVisitedLesson(userId: string, courseId: string) {
     return null;
   }
 
-  const snapshot = await getDoc(doc(db, "lastVisited", userId, "courses", courseId));
+  const snapshot = await getDoc(doc(db, "lms-activity", userId, "lastVisited", courseId));
 
   if (!snapshot.exists()) {
     return null;
@@ -100,7 +100,7 @@ export async function getLastVisitedLessons(userId: string) {
     return [] as LastVisitedLesson[];
   }
 
-  const snapshot = await getDocs(collection(db, "lastVisited", userId, "courses"));
+  const snapshot = await getDocs(collection(db, "lms-activity", userId, "lastVisited"));
   return snapshot.docs.map((item) => ({
     courseId: item.id,
     ...(item.data() as Omit<LastVisitedLesson, "courseId">),
@@ -119,7 +119,7 @@ export async function saveLastVisitedLesson(
   }
 
   await setDoc(
-    doc(db, "lastVisited", userId, "courses", courseId),
+    doc(db, "lms-activity", userId, "lastVisited", courseId),
     {
       ...lesson,
       updatedAt: serverTimestamp(),
@@ -135,7 +135,7 @@ export async function getLessonNote(userId: string, lessonId: string) {
     return "";
   }
 
-  const snapshot = await getDoc(doc(db, "enrollments", userId, "notes", lessonId));
+  const snapshot = await getDoc(doc(db, "lms-activity", userId, "notes", lessonId));
   return String(snapshot.data()?.text || "");
 }
 
@@ -147,7 +147,7 @@ export async function saveLessonNote(userId: string, lessonId: string, text: str
   }
 
   await setDoc(
-    doc(db, "enrollments", userId, "notes", lessonId),
+    doc(db, "lms-activity", userId, "notes", lessonId),
     {
       text,
       updatedAt: serverTimestamp(),
@@ -164,7 +164,7 @@ export async function saveLessonBookmark(userId: string, lessonId: string) {
   }
 
   await setDoc(
-    doc(db, "enrollments", userId, "bookmarks", lessonId),
+    doc(db, "lms-activity", userId, "bookmarks", lessonId),
     {
       lessonId,
       bookmarkedAt: serverTimestamp(),
@@ -216,7 +216,7 @@ export async function getUserNotifications(userId: string) {
     return [] as LmsNotification[];
   }
 
-  const notificationsQuery = query(collection(db, "notifications"), where("userId", "==", userId));
+  const notificationsQuery = query(collection(db, "users", userId, "notifications"), where("userId", "==", userId));
   const snapshot = await getDocs(notificationsQuery);
   return snapshot.docs.map((item) => ({
     id: item.id,
@@ -224,14 +224,14 @@ export async function getUserNotifications(userId: string) {
   }));
 }
 
-export async function markNotificationRead(notificationId: string) {
+export async function markNotificationRead(userId: string, notificationId: string) {
   const db = getFirebaseDb();
 
   if (!db) {
     return;
   }
 
-  await updateDoc(doc(db, "notifications", notificationId), {
+  await updateDoc(doc(db, "users", userId, "notifications", notificationId), {
     read: true,
     readAt: serverTimestamp(),
   });

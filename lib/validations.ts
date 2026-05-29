@@ -21,6 +21,8 @@ export const leadSchema = z.object({
   source: z.string().min(2).optional().default("Website Inquiry"),
   pageUrl: z.string().optional().default(""),
   courseSlug: z.string().optional().default(""),
+}).refine((value) => Boolean(value.phone.trim() || value.email.trim()), {
+  message: "Either phone or email is required.",
 });
 
 export const paymentCreateSchema = z

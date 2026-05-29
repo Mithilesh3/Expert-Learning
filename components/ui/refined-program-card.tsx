@@ -25,9 +25,9 @@ type BadgeTone = "green" | "orange" | "blue" | "purple";
 
 const badgeToneClasses: Record<BadgeTone, string> = {
   green: "border-[rgba(52,211,153,0.2)] bg-[rgba(16,185,129,0.12)] text-[#34D399]",
-  orange: "border-[rgba(249,115,22,0.2)] bg-[rgba(249,115,22,0.12)] text-[#FB923C]",
-  blue: "border-[rgba(96,165,250,0.2)] bg-[rgba(59,130,246,0.12)] text-[#60A5FA]",
-  purple: "border-[rgba(167,139,250,0.2)] bg-[rgba(139,92,246,0.12)] text-[#A78BFA]",
+  orange: "border-[rgba(79,70,229,0.2)] bg-[rgba(79,70,229,0.1)] text-[#4F46E5]",
+  blue: "border-[rgba(37,99,235,0.2)] bg-[rgba(37,99,235,0.1)] text-[#2563EB]",
+  purple: "border-[rgba(6,182,212,0.2)] bg-[rgba(6,182,212,0.1)] text-[#0891B2]",
 };
 
 const courseIconMap = {
@@ -107,8 +107,8 @@ export function RefinedProgramCard({
   return (
     <article
       className={cn(
-        "relative flex h-full flex-col gap-3 rounded-[18px] border border-[#1E2D42] bg-[linear-gradient(180deg,rgba(17,24,39,0.96),rgba(15,23,42,0.92))] p-[18px] shadow-[0_20px_44px_rgba(2,8,28,0.28)] transition-all duration-300 hover:-translate-y-1 hover:border-[#F97316] hover:shadow-[0_28px_54px_rgba(2,8,28,0.38),0_0_24px_rgba(249,115,22,0.12)]",
-        featured && "border-[rgba(249,115,22,0.5)]",
+        "relative flex h-full flex-col gap-3 rounded-[16px] border border-[rgba(226,232,240,0.8)] bg-[rgba(255,255,255,0.96)] p-[18px] shadow-[0_10px_30px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-1 hover:border-[#4F46E5]/30 hover:shadow-[0_20px_40px_rgba(15,23,42,0.12)]",
+        featured && "border-[rgba(79,70,229,0.4)]",
       className,
     )}
     >
@@ -126,39 +126,39 @@ export function RefinedProgramCard({
       </div>
 
       <div className="flex items-start justify-between">
-        <div className="flex h-[38px] w-[38px] items-center justify-center rounded-[10px] border border-[rgba(249,115,22,0.25)] bg-[rgba(249,115,22,0.1)] text-[#F97316]">
+        <div className="flex h-[38px] w-[38px] items-center justify-center rounded-[10px] border border-[rgba(79,70,229,0.2)] bg-[rgba(79,70,229,0.08)] text-[#4F46E5]">
           <Icon size={18} strokeWidth={1.8} />
         </div>
       </div>
 
       <div className="flex items-center gap-2">
         <span className="text-[11px] text-[#475569]">{duration}</span>
-        <span className="h-[3px] w-[3px] rounded-full bg-[#334155]" />
+        <span className="h-[3px] w-[3px] rounded-full bg-[#94A3B8]" />
         <span className="text-[11px] text-[#475569]">{level}</span>
       </div>
 
-      <h3 className="text-[14px] font-semibold leading-[1.4] text-[#F1F5F9]">{title}</h3>
-      <p className="flex-1 text-[12px] leading-[1.6] text-[#64748B]">{description}</p>
+      <h3 className="text-[14px] font-bold leading-[1.4] text-[#0F172A]">{title}</h3>
+      <p className="flex-1 text-[12px] leading-[1.6] text-[#475569]">{description}</p>
 
       <div className="flex flex-wrap gap-[5px]">
         {tags.map((tag) => (
-          <span key={tag} className="rounded-[6px] border border-[#2D3F55] bg-[#1E293B] px-2 py-[2px] text-[10px] text-[#475569]">
+          <span key={tag} className="rounded-[6px] border border-[#E2E8F0] bg-[#F8FAFC] px-2 py-[2px] text-[10px] text-[#475569]">
             {tag}
           </span>
         ))}
       </div>
 
-      <div className="h-px bg-[#1A2537]" />
+      <div className="h-px bg-[#E2E8F0]" />
 
       <div className="flex items-center justify-between">
         <div>
           <div className="inline-flex items-center rounded-full border border-[rgba(16,185,129,0.2)] bg-[rgba(16,185,129,0.1)] px-2 py-[2px] text-[10px] text-[#34D399]">
             🏷 Launch Offer
           </div>
-          {originalPrice ? <div className="mono-meta mt-2 text-[12px] text-[#475569] line-through">{originalPrice}</div> : null}
-          <div className="mono-meta mt-1 text-[18px] font-semibold text-[#F97316]">{price}</div>
+          {originalPrice ? <div className="mono-meta mt-2 text-[12px] text-[#94A3B8] line-through">{originalPrice}</div> : null}
+          <div className="mono-meta mt-1 text-[18px] font-semibold text-[#4F46E5]">{price}</div>
         </div>
-        <div className="text-[11px] text-[#334155]">{duration}</div>
+        <div className="text-[11px] text-[#475569]">{duration}</div>
       </div>
 
       <div className="flex gap-2">
@@ -168,14 +168,14 @@ export function RefinedProgramCard({
             label="Purchase"
             isEnrolled={isEnrolled}
             className={cn(
-              "inline-flex flex-1 items-center justify-center gap-[6px] whitespace-nowrap rounded-[8px] border-0 px-0 py-[10px] text-[13px] font-medium text-white transition-all duration-200",
-              isEnrolled ? "bg-[#16a34a] hover:bg-[#15803d]" : "bg-[#F97316] hover:bg-[#EA580C]",
+              "inline-flex flex-1 items-center justify-center gap-[6px] whitespace-nowrap rounded-[10px] border-0 px-0 py-[10px] text-[13px] font-medium text-white transition-all duration-200",
+              isEnrolled ? "bg-[#16a34a] hover:bg-[#15803d]" : "bg-[#4F46E5] hover:bg-[#4338CA]",
             )}
           />
         ) : (
           <Link
             href={isEnrolled ? purchasedCourseHref : primaryHref || "/courses"}
-            className="inline-flex flex-1 items-center justify-center gap-[6px] whitespace-nowrap rounded-[8px] border-0 bg-[#F97316] px-0 py-[10px] text-[13px] font-medium text-white transition-all duration-200 hover:bg-[#EA580C]"
+            className="inline-flex flex-1 items-center justify-center gap-[6px] whitespace-nowrap rounded-[10px] border-0 bg-[#4F46E5] px-0 py-[10px] text-[13px] font-medium text-white transition-all duration-200 hover:bg-[#4338CA]"
           >
             {isEnrolled ? "View Course" : "Purchase"}
           </Link>
@@ -185,7 +185,7 @@ export function RefinedProgramCard({
             href={secondaryHref}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex flex-1 items-center justify-center gap-[6px] whitespace-nowrap rounded-[8px] border border-[#2D3F55] bg-transparent px-0 py-[10px] text-[13px] text-[#94A3B8] transition-all duration-200 hover:border-[#F97316] hover:text-[#F97316]"
+            className="inline-flex flex-1 items-center justify-center gap-[6px] whitespace-nowrap rounded-[10px] border border-[#E2E8F0] bg-white px-0 py-[10px] text-[13px] text-[#475569] transition-all duration-200 hover:border-[#4F46E5] hover:text-[#4F46E5]"
           >
             <IconExternalLink size={13} />
             {secondaryLabel}
@@ -193,7 +193,7 @@ export function RefinedProgramCard({
         ) : (
           <a
             href={secondaryHref}
-            className="inline-flex flex-1 items-center justify-center gap-[6px] whitespace-nowrap rounded-[8px] border border-[#2D3F55] bg-transparent px-0 py-[10px] text-[13px] text-[#94A3B8] transition-all duration-200 hover:border-[#F97316] hover:text-[#F97316]"
+            className="inline-flex flex-1 items-center justify-center gap-[6px] whitespace-nowrap rounded-[10px] border border-[#E2E8F0] bg-white px-0 py-[10px] text-[13px] text-[#475569] transition-all duration-200 hover:border-[#4F46E5] hover:text-[#4F46E5]"
           >
             <IconExternalLink size={13} />
             {secondaryLabel}

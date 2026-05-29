@@ -3,7 +3,7 @@
 import { createContext } from "react";
 import type { User } from "firebase/auth";
 
-export type AuthModalMode = "login" | "signup";
+export type AuthModalMode = "login" | "signup" | "choice";
 
 export type AuthContextValue = {
   user: User | null;

@@ -11,6 +11,6 @@ export const siteConfig = {
   phone: "+91 8421056291",
   whatsapp: "918421056291",
   gstNumber: "27AAHCN4778J1ZU",
-  address: "Lucknow, BBD College",
+  address: "Lucknow, BBD College, Uttar Pradesh, India",
   addressLines: ["Lucknow, BBD College", "Uttar Pradesh, India"],
 };

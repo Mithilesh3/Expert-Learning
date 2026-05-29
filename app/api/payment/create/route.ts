@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getCoursesBySlugs, parsePriceToPaise } from "@/lib/course-catalog";
-import { getMyEnrollments, isFirestorePermissionError, logFirestoreIssue } from "@/lib/firebase";
+import { resolveCheckoutOfferings } from "@/lib/offering-catalog";
+import { findExistingEnrollmentCourseIds, isFirestorePermissionError, logFirestoreIssue } from "@/lib/firebase";
 import { env } from "@/lib/env";
 import { getRazorpayClient } from "@/lib/services/payments";
 import { paymentCreateSchema } from "@/lib/validations";
@@ -9,17 +9,19 @@ export async function POST(request: Request) {
   try {
     const body = paymentCreateSchema.parse(await request.json());
     const razorpay = getRazorpayClient();
-    const courseSlugs = body.courseSlugs?.length ? body.courseSlugs : body.courseSlug ? [body.courseSlug] : [];
-    const courses = getCoursesBySlugs(courseSlugs);
+    const requestedSlugs = body.courseSlugs?.length ? body.courseSlugs : body.courseSlug ? [body.courseSlug] : [];
+    const { offerings, missing } = resolveCheckoutOfferings(requestedSlugs);
 
-    if (courses.length !== courseSlugs.length) {
+    if (missing.length > 0 || offerings.length !== requestedSlugs.length) {
       return NextResponse.json({ success: false, message: "One or more selected courses were not found." }, { status: 404 });
     }
 
     if (body.userId) {
       try {
-        const enrolledCourseIds = new Set((await getMyEnrollments(body.userId)).map((enrollment) => enrollment.courseId));
-        const duplicateCourses = courses.filter((course) => enrolledCourseIds.has(course.slug));
+        const duplicateCourses = await findExistingEnrollmentCourseIds(
+          body.userId,
+          offerings.flatMap((offering) => offering.courseSlugs),
+        );
 
         if (duplicateCourses.length > 0) {
           return NextResponse.json(
@@ -42,10 +44,7 @@ export async function POST(request: Request) {
       }
     }
 
-    const subtotalPaise = courses.reduce((sum, course) => {
-      const price = parsePriceToPaise(course.price);
-      return sum + (price || 0);
-    }, 0);
+    const subtotalPaise = offerings.reduce((sum, offering) => sum + (offering.priceValue * 100), 0);
     const amount = subtotalPaise;
 
     if (!amount || !razorpay) {
@@ -58,13 +57,14 @@ export async function POST(request: Request) {
     const order = await razorpay.orders.create({
       amount,
       currency: "INR",
-      receipt: `${courseSlugs[0]?.slice(0, 18) || "cart"}-${courseSlugs.length}-${Date.now()}`.slice(0, 40),
+      receipt: `${requestedSlugs[0]?.slice(0, 18) || "cart"}-${requestedSlugs.length}-${Date.now()}`.slice(0, 40),
       notes: {
+        userId: body.userId || "",
         name: body.name,
         email: body.email,
         phone: body.phone,
-        courseSlug: courseSlugs[0],
-        courseSlugs: courseSlugs.join(","),
+        courseSlug: requestedSlugs[0],
+        courseSlugs: requestedSlugs.join(","),
         gstNumber: body.gstNumber?.trim() || "",
         companyName: body.companyName?.trim() || "",
       },
@@ -74,7 +74,7 @@ export async function POST(request: Request) {
       success: true,
       keyId: env.nextPublicRazorpayKeyId,
       order,
-      courses,
+      courses: offerings,
     });
   } catch (error) {
     const statusCode =

@@ -20,7 +20,7 @@ function GradientGzMark({
         width,
         height,
         borderRadius,
-        background: "linear-gradient(135deg, #f97316, #a78bfa)",
+        background: "linear-gradient(135deg, #4f46e5, #2563eb)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -60,10 +60,10 @@ export function Brand({
       >
         <GradientGzMark width="38px" height="38px" borderRadius="10px" fontSize="16px" />
         <span className="flex flex-col gap-px">
-          <span className="whitespace-nowrap text-[15px] leading-none font-extrabold tracking-[-0.03em] text-[#F1F5F9]">
-            Gen<span className="text-[#F97316]">Z</span>Next
+          <span className="whitespace-nowrap text-[15px] leading-none font-extrabold tracking-[-0.03em] text-[#111827]">
+            Gen<span className="text-[#4F46E5]">Z</span>Next
           </span>
-          <span className="whitespace-nowrap text-[9px] leading-none font-normal tracking-[0.04em] text-[#475569]">
+          <span className="whitespace-nowrap text-[9px] leading-none font-normal tracking-[0.04em] text-[#6B7280]">
             Research &amp; Training
           </span>
         </span>
@@ -79,10 +79,10 @@ export function Brand({
     >
       <GradientGzMark width="38px" height="38px" borderRadius="10px" fontSize="16px" />
       <span className="flex flex-col gap-px">
-        <span className="whitespace-nowrap text-[15px] leading-none font-extrabold tracking-[-0.03em] text-[#F1F5F9]">
-          Gen<span className="text-[#F97316]">Z</span>Next
+        <span className="whitespace-nowrap text-[15px] leading-none font-extrabold tracking-[-0.03em] text-[#111827]">
+          Gen<span className="text-[#4F46E5]">Z</span>Next
         </span>
-        <span className="whitespace-nowrap text-[9px] leading-none font-normal tracking-[0.04em] text-[#475569]">
+        <span className="whitespace-nowrap text-[9px] leading-none font-normal tracking-[0.04em] text-[#6B7280]">
           Research &amp; Training
         </span>
       </span>

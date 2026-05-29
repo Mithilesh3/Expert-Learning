@@ -1,221 +1,147 @@
-import Link from "next/link";
-import {
-  IconArrowRight,
-  IconBrain,
-  IconBrandAzure,
-  IconCloud,
-  IconSettingsAutomation,
-} from "@tabler/icons-react";
-import { buildMetadata } from "@/lib/metadata";
-import { coursesByCategory, type CourseCategoryKey } from "@/data/courses";
-import { Reveal } from "@/components/ui/reveal";
-import { cn } from "@/lib/utils";
+"use client";
 
-type CategoryCard = {
-  key: CourseCategoryKey;
-  title: string;
-  description: string;
-  href: string;
-  badge: string;
-  accent: {
-    hover: string;
-    icon: string;
-    badge: string;
-  };
-  Icon: typeof IconCloud;
-};
+import { Search } from "lucide-react";
+import { useMemo, useState } from "react";
+import { CourseCatalogCard } from "@/components/ui/course-catalog-card";
+import { allCourses } from "@/data/courses";
+import type { LearningTrackKey } from "@/data/learning-tracks";
 
-type ShortcutCard = {
-  title: string;
-  description: string;
-  href: string;
-  iconLabel: string;
-};
-
-const categoryCards: CategoryCard[] = [
-  {
-    key: "aws",
-    title: "AWS Courses",
-    description: "Certification pathways for cloud foundations, architecture, operations, and DevOps delivery.",
-    href: "/courses/aws",
-    badge: "5 Programs",
-    accent: {
-      hover: "hover:border-[rgba(249,115,22,0.3)] hover:bg-[rgba(249,115,22,0.04)]",
-      icon: "border-[rgba(249,115,22,0.2)] bg-[rgba(249,115,22,0.12)] text-[#F97316]",
-      badge: "bg-[rgba(249,115,22,0.1)] text-[#FB923C]",
-    },
-    Icon: IconCloud,
-  },
-  {
-    key: "azure",
-    title: "Azure Courses",
-    description: "Microsoft-aligned certification tracks across administration, security, DevOps, and architecture.",
-    href: "/courses/azure",
-    badge: "5 Programs",
-    accent: {
-      hover: "hover:border-[rgba(59,130,246,0.3)] hover:bg-[rgba(59,130,246,0.04)]",
-      icon: "border-[rgba(59,130,246,0.2)] bg-[rgba(59,130,246,0.12)] text-[#60A5FA]",
-      badge: "bg-[rgba(59,130,246,0.1)] text-[#60A5FA]",
-    },
-    Icon: IconBrandAzure,
-  },
-  {
-    key: "ai",
-    title: "AI Courses",
-    description: "Modern AI programs covering machine learning, Generative AI, MLOps, and analytics applications.",
-    href: "/courses/ai",
-    badge: "4 Programs",
-    accent: {
-      hover: "hover:border-[rgba(139,92,246,0.3)] hover:bg-[rgba(139,92,246,0.04)]",
-      icon: "border-[rgba(139,92,246,0.2)] bg-[rgba(139,92,246,0.12)] text-[#A78BFA]",
-      badge: "bg-[rgba(139,92,246,0.1)] text-[#A78BFA]",
-    },
-    Icon: IconBrain,
-  },
-  {
-    key: "devops",
-    title: "DevOps Courses",
-    description: "Hands-on DevOps pathways for containers, CI/CD, monitoring, automation, and platform workflows.",
-    href: "/courses/devops",
-    badge: "4 Programs",
-    accent: {
-      hover: "hover:border-[rgba(16,185,129,0.3)] hover:bg-[rgba(16,185,129,0.04)]",
-      icon: "border-[rgba(16,185,129,0.2)] bg-[rgba(16,185,129,0.12)] text-[#34D399]",
-      badge: "bg-[rgba(16,185,129,0.1)] text-[#34D399]",
-    },
-    Icon: IconSettingsAutomation,
-  },
+const trackOptions: Array<{ value: LearningTrackKey | "all"; label: string }> = [
+  { value: "all", label: "All Tracks" },
+  { value: "ai", label: "AI" },
+  { value: "generative-ai", label: "Generative AI" },
+  { value: "agentic-ai", label: "Agentic AI" },
+  { value: "devsecops", label: "DevOps" },
+  { value: "aws-certifications", label: "AWS Certifications" },
+  { value: "azure-certifications", label: "Azure Certifications" },
 ];
 
-const shortcutCards: ShortcutCard[] = [
-  {
-    title: "Summer Training 2026",
-    description: "Live classes and July batch access",
-    href: "/enroll/azure-administrator",
-    iconLabel: "ST",
-  },
-  {
-    title: "Corporate Training",
-    description: "Team upskilling and enterprise plans",
-    href: "/corporate-training",
-    iconLabel: "CT",
-  },
-  {
-    title: "All Certifications",
-    description: "Browse every cloud and AI pathway",
-    href: "/courses",
-    iconLabel: "AC",
-  },
-];
-
-export const metadata = buildMetadata({
-  title: "Courses | GenZNext Research & Training",
-  description:
-    "Explore compact category dashboards for AWS, Azure, AI, DevOps, and Summer Training programs.",
-  path: "/courses",
-});
+const modeOptions = [
+  { value: "all", label: "All Modes" },
+  { value: "live", label: "Live" },
+  { value: "recorded", label: "Recorded" },
+  { value: "hybrid", label: "Hybrid" },
+] as const;
 
 export default function CoursesPage() {
+  const [search, setSearch] = useState("");
+  const [track, setTrack] = useState<LearningTrackKey | "all">("all");
+  const [level, setLevel] = useState<"all" | "Beginner" | "Intermediate" | "Advanced">("all");
+  const [mode, setMode] = useState<(typeof modeOptions)[number]["value"]>("all");
+
+  const filteredCourses = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return allCourses.filter((course) => {
+      const bySearch =
+        !query ||
+        course.title.toLowerCase().includes(query) ||
+        course.tags.some((tag) => tag.toLowerCase().includes(query));
+      const byTrack = track === "all" || course.track === track;
+      const byLevel = level === "all" || course.level === level;
+      const byMode = mode === "all" || course.mode === mode;
+      return bySearch && byTrack && byLevel && byMode;
+    });
+  }, [level, mode, search, track]);
+
   return (
-    <section className="relative overflow-hidden bg-[#0D1117] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[length:44px_44px]" />
-        <div className="absolute top-[-180px] right-[-120px] h-[480px] w-[480px] bg-[radial-gradient(circle,rgba(249,115,22,0.12)_0%,transparent_68%)]" />
-        <div className="absolute bottom-[-120px] left-[-90px] h-[360px] w-[360px] bg-[radial-gradient(circle,rgba(59,130,246,0.08)_0%,transparent_72%)]" />
+    <section className="bg-[#F8FAFC] text-[#6B7280]">
+      <div className="bg-[#F8FAFC]">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-14">
+          <div className="rounded-3xl border border-[#E5E7EB] bg-[#FFFFFF] px-6 py-8 shadow-sm sm:px-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#111827]">GenZNext Course Catalog</p>
+            <h1 className="mt-3 max-w-3xl text-3xl font-semibold leading-tight text-[#111827] sm:text-4xl">
+              Advance Your Cloud & AI Career
+            </h1>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-[#6B7280] sm:text-base">
+              Explore mentor-led pathways in AWS, Azure, DevSecOps, AI, Generative AI, and Agentic AI with practical projects and certification support.
+            </p>
+
+            <div className="mt-5 grid gap-3 text-sm sm:grid-cols-3">
+              <div className="rounded-xl border border-[#E5E7EB] bg-[#F8FAFC] px-4 py-3">
+                <p className="font-semibold">1,500+ learners</p>
+                <p className="mt-1 text-xs text-[#6B7280]">Career-focused training programs</p>
+              </div>
+              <div className="rounded-xl border border-[#E5E7EB] bg-[#F8FAFC] px-4 py-3">
+                <p className="font-semibold">40+ live batches</p>
+                <p className="mt-1 text-xs text-[#6B7280]">Mentor-guided interactive sessions</p>
+              </div>
+              <div className="rounded-xl border border-[#E5E7EB] bg-[#F8FAFC] px-4 py-3">
+                <p className="font-semibold">Certification-first</p>
+                <p className="mt-1 text-xs text-[#6B7280]">Exam prep, projects, and support</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="relative mx-auto max-w-[1400px]">
-        <Reveal>
-          <div className="grid gap-4 lg:grid-cols-[1fr_260px]">
-            <div className="grid gap-3 md:grid-cols-2">
-              {categoryCards.map((item) => {
-                const courses = coursesByCategory[item.key];
-
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "group flex min-h-[236px] flex-col gap-[10px] rounded-[18px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] p-[16px] text-left shadow-[0_24px_48px_rgba(0,0,0,0.24)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-1",
-                      item.accent.hover,
-                    )}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={cn("flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-[12px] border", item.accent.icon)}>
-                        <item.Icon size={19} />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-[15px] font-semibold text-[#F8FAFC]">{item.title}</div>
-                        <p className="mt-1.5 text-[12px] leading-[1.55] text-[#94A3B8]">{item.description}</p>
-                      </div>
-                    </div>
-
-                    <div className="mt-1 grid gap-1.5">
-                      {courses.map((course, index) => (
-                        <div key={course.slug} className="flex items-center gap-2">
-                          <span className={cn("h-1.5 w-1.5 rounded-full", index === 0 ? "bg-[#F97316]" : "bg-[#334155]")} />
-                          <span className={cn("line-clamp-1 text-[11px]", index === 0 ? "text-[#CBD5E1]" : "text-[#64748B]")}>
-                            {course.title}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="mt-auto flex items-center justify-between">
-                      <span className={cn("rounded-full px-2.5 py-[4px] text-[10px] font-medium", item.accent.badge)}>{item.badge}</span>
-                      <span className="inline-flex items-center gap-1 text-[12px] font-medium text-[#E2E8F0] transition group-hover:text-white">
-                        Open Track
-                        <IconArrowRight size={14} />
-                      </span>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-
-            <Link
-              href="/enroll/azure-administrator"
-              className="group flex min-h-[236px] flex-col rounded-[18px] border border-[rgba(249,115,22,0.18)] bg-[linear-gradient(135deg,rgba(249,115,22,0.08),rgba(59,130,246,0.06))] p-[18px] shadow-[0_24px_48px_rgba(0,0,0,0.24)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-1 hover:border-[rgba(249,115,22,0.3)] hover:bg-[linear-gradient(135deg,rgba(249,115,22,0.1),rgba(59,130,246,0.08))]"
-            >
-              <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#F97316]">Summer Special</div>
-              <div className="mt-3 text-[18px] font-semibold text-[#F8FAFC]">Summer Training 2026</div>
-              <p className="mt-3 text-[12px] leading-[1.65] text-[#CBD5E1]">
-                Live mentor-led training with practical cloud labs, internship support, and project-driven learning.
-              </p>
-
-              <div className="mt-5 space-y-2 text-[11px]">
-                <div className="text-[#34D399]">+ Azure Administrator (AZ-104)</div>
-                <div className="text-[#34D399]">+ Internship and certification support</div>
-                <div className="text-[#94A3B8]">+ Compact premium learner journey</div>
-              </div>
-
-              <div className="mt-auto inline-flex items-center gap-1 pt-6 text-[12px] font-semibold text-[#F8FAFC] transition group-hover:text-white">
-                Register for Summer Batch
-                <IconArrowRight size={14} />
-              </div>
-            </Link>
-          </div>
-        </Reveal>
-
-        <Reveal delay={0.05}>
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
-            {shortcutCards.map((item) => (
-              <Link
-                key={item.title}
-                href={item.href}
-                className="flex items-center gap-[10px] rounded-[16px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-[14px] py-3 text-left shadow-[0_16px_36px_rgba(0,0,0,0.2)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.05)]"
-              >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-[rgba(255,255,255,0.05)] text-[11px] font-semibold tracking-[0.12em] text-[#CBD5E1]">
-                  {item.iconLabel}
-                </span>
-                <span className="min-w-0">
-                  <span className="block text-[13px] font-medium text-[#E2E8F0]">{item.title}</span>
-                  <span className="mt-1 block text-[11px] text-[#64748B]">{item.description}</span>
-                </span>
-              </Link>
+      <div className="sticky top-[74px] z-10 border-y border-[#E5E7EB] bg-[#F8FAFC]">
+        <div className="mx-auto grid max-w-7xl gap-3 px-4 py-4 sm:px-6 lg:grid-cols-4 lg:px-8">
+          <label className="relative block lg:col-span-2">
+            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#9CA3AF]" />
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search by title, skill, or tool"
+              className="w-full rounded-xl border border-[#6B7280] bg-white py-2.5 pr-3 pl-9 text-sm text-[#111827] outline-none transition focus:border-[#111827]"
+            />
+          </label>
+          <select
+            value={track}
+            onChange={(event) => setTrack(event.target.value as LearningTrackKey | "all")}
+            className="rounded-xl border border-[#6B7280] bg-white px-3 py-2.5 text-sm text-[#111827] outline-none transition focus:border-[#111827]"
+          >
+            {trackOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
             ))}
+          </select>
+          <div className="grid grid-cols-2 gap-3">
+            <select
+              value={level}
+              onChange={(event) => setLevel(event.target.value as typeof level)}
+              className="rounded-xl border border-[#6B7280] bg-white px-3 py-2.5 text-sm text-[#111827] outline-none transition focus:border-[#111827]"
+            >
+              <option value="all">All Levels</option>
+              <option value="Beginner">Beginner</option>
+              <option value="Intermediate">Intermediate</option>
+              <option value="Advanced">Advanced</option>
+            </select>
+            <select
+              value={mode}
+              onChange={(event) => setMode(event.target.value as typeof mode)}
+              className="rounded-xl border border-[#6B7280] bg-white px-3 py-2.5 text-sm text-[#111827] outline-none transition focus:border-[#111827]"
+            >
+              {modeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
-        </Reveal>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mb-6 flex items-center justify-between gap-3">
+          <p className="text-sm text-[#6B7280]">
+            Showing <span className="font-semibold text-[#111827]">{filteredCourses.length}</span> programs
+          </p>
+          <p className="hidden text-xs text-[#9CA3AF] sm:block">Certification tracks · Live mentorship · LMS access</p>
+        </div>
+
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {filteredCourses.map((course) => (
+            <CourseCatalogCard key={course.slug} course={course} />
+          ))}
+        </div>
+
+        {!filteredCourses.length ? (
+          <div className="mt-8 rounded-2xl border border-dashed border-[#D1D5DB] bg-white p-8 text-center">
+            <p className="text-sm font-medium text-[#111827]">No courses match your current filters.</p>
+            <p className="mt-1 text-sm text-[#6B7280]">Try resetting search, track, level, or mode to explore more programs.</p>
+          </div>
+        ) : null}
       </div>
     </section>
   );

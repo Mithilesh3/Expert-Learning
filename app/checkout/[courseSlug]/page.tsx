@@ -2,7 +2,7 @@ import { ShieldCheck } from "lucide-react";
 import { notFound } from "next/navigation";
 import { CourseCheckoutGuard } from "@/components/enroll/course-checkout-guard";
 import { EnrollmentForm } from "@/components/forms/enrollment-form";
-import { getCourseBySlug } from "@/lib/course-catalog";
+import { getCheckoutOfferingBySlug } from "@/lib/offering-catalog";
 
 type PageProps = {
   params: Promise<{ courseSlug: string }>;
@@ -10,7 +10,7 @@ type PageProps = {
 
 export default async function CourseCheckoutPage({ params }: PageProps) {
   const { courseSlug } = await params;
-  const course = getCourseBySlug(courseSlug);
+  const course = getCheckoutOfferingBySlug(courseSlug);
 
   if (!course) {
     notFound();
@@ -22,7 +22,7 @@ export default async function CourseCheckoutPage({ params }: PageProps) {
         <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.94fr_1.06fr]">
           <aside className="surface-card p-6">
             <div className="inline-flex items-center gap-2 rounded-full border border-brand-blue-light/25 bg-brand-blue/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-blue-light">
-              <span className="h-2 w-2 rounded-full bg-[#F97316]" />
+              <span className="h-2 w-2 rounded-full bg-[#4F46E5]" />
               {course.tagLabel}
             </div>
             <h2 className="mt-4 text-[28px] font-bold leading-tight text-brand-text">{course.title}</h2>

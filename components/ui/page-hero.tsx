@@ -31,12 +31,12 @@ export function PageHero({
       <div className="relative mx-auto max-w-7xl">
         <Reveal className="glass-panel-dark relative rounded-[22px] px-5 py-10 sm:px-10 sm:py-12">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-brand-blue-light/40 bg-brand-blue/16 px-[14px] py-1 text-[11px] font-medium text-brand-blue-light">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#E2E8F0] bg-white px-[14px] py-1 text-[11px] font-medium text-[#64748B]">
               <span className="h-1.5 w-1.5 rounded-full bg-brand-blue-bright" />
               {eyebrow}
             </div>
-            <h1 className="mt-5 text-3xl font-bold leading-[1.2] text-white sm:text-[38px]">{title}</h1>
-            <p className="mt-4 max-w-[560px] text-[15px] leading-[1.75] text-[#E2E8F0]">{description}</p>
+            <h1 className="mt-5 text-3xl font-bold leading-[1.2] text-[#0F172A] sm:text-[38px]">{title}</h1>
+            <p className="mt-4 max-w-[560px] text-[15px] leading-[1.75] text-[#475569]">{description}</p>
             {showCtas ? (
               <div className="mt-8 flex flex-wrap gap-3">
                 {primaryCta.label === "Apply Now" ? (

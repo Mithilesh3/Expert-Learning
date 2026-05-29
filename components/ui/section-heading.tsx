@@ -15,7 +15,7 @@ export function SectionHeading({
 }) {
   return (
     <div className={cn("max-w-[560px]", align === "center" && "mx-auto text-center")}>
-      <div className={cn("section-label", theme === "light" && "text-[#FDBA74]")}>{eyebrow}</div>
+      <div className={cn("section-label", theme === "light" && "text-[#7C3AED]")}>{eyebrow}</div>
       <h2
         className={cn(
           "mt-1.5 text-[26px] font-bold leading-[1.2]",

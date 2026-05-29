@@ -5,16 +5,15 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          blue: "#2563EB",
-          blueDark: "#0A2C80",
-          navy: "#071A52",
-          blueBright: "#60A5FA",
-          blueLight: "#8FC4FF",
-          amber: "#3B82F6",
-          violet: "#4F7CFF",
-          surface: "rgba(255,255,255,0.06)",
-          text: "#FFFFFF",
-          muted: "#CBD5E1",
+          primary: "#4F46E5",
+          secondary: "#2563EB",
+          accent: "#7C3AED",
+          background: "#F8FAFC",
+          card: "#FFFFFF",
+          text: "#111827",
+          muted: "#6B7280",
+          border: "#E5E7EB",
+          hover: "#4338CA",
         },
       },
       fontFamily: {
@@ -22,8 +21,12 @@ const config: Config = {
         mono: ["JetBrains Mono", "monospace"],
       },
       borderRadius: {
-        card: "12px",
+        card: "14px",
         pill: "9999px",
+      },
+      boxShadow: {
+        soft: "0 8px 30px rgba(17,24,39,0.06)",
+        card: "0 10px 28px rgba(17,24,39,0.08)",
       },
     },
   },

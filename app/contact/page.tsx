@@ -24,14 +24,14 @@ export default function ContactPage() {
               <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.04),transparent_42%,rgba(251,146,60,0.06)_100%)]" />
             </div>
             <div className="relative max-w-3xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-brand-blue-light/45 bg-brand-blue/18 px-[14px] py-1 text-[11px] font-medium text-brand-blue-light">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#E2E8F0] bg-white px-[14px] py-1 text-[11px] font-medium text-[#64748B]">
                 <span className="h-1.5 w-1.5 rounded-full bg-brand-blue-bright" />
                 Contact GenZNext
               </div>
-              <h1 className="mt-4 max-w-[13ch] text-4xl font-bold leading-[1.1] tracking-[-0.02em] text-white sm:text-[42px] lg:text-5xl">
+              <h1 className="mt-4 max-w-[13ch] text-4xl font-bold leading-[1.1] tracking-[-0.02em] text-[#0F172A] sm:text-[42px] lg:text-5xl">
                 Connect with our admissions and learning team
               </h1>
-              <p className="mt-4 max-w-2xl text-[15px] leading-7 text-[#E8EEF8] sm:text-[17px] sm:leading-8 lg:text-lg">
+              <p className="mt-4 max-w-2xl text-[15px] leading-7 text-[#475569] sm:text-[17px] sm:leading-8 lg:text-lg">
                 Whether you&apos;re exploring Cloud, AI, DevOps, or enterprise
                 training, our team is here to guide you with the right learning
                 path and career-focused support.

@@ -18,6 +18,7 @@ import {
   type FirestoreEnrollment,
 } from "@/lib/firebase";
 import { readMyLearningCourses, type MyLearningCourse } from "@/lib/my-learning";
+import { getCanonicalCourseId, getCourseSlugByCourseId } from "@/lib/offering-catalog";
 import { latestOrderStorageKey, type StoredOrderSuccess } from "@/lib/order-success";
 
 type DashboardPanelProps = {
@@ -97,12 +98,12 @@ function getDashboardLessons(program: LmsProgram) {
 
 function buildInvoiceEnrollments(invoice: StoredOrderSuccess) {
   return invoice.courses.map((course) => ({
-    id: `local-${invoice.orderId}-${course.slug}`,
+    id: `local-${invoice.orderId}-${getCourseSlugByCourseId(course.slug)}`,
     userId: "",
     userName: invoice.customer.name,
     userPhone: invoice.customer.phone,
     userEmail: invoice.customer.email,
-    courseId: course.slug,
+    courseId: getCourseSlugByCourseId(course.slug),
     courseName: course.title,
     amountPaid: Math.round(course.amountPaise / 100),
     razorpayOrderId: invoice.orderId,
@@ -119,12 +120,12 @@ function buildInvoiceEnrollments(invoice: StoredOrderSuccess) {
 
 function buildLocalLearningEnrollments(courses: MyLearningCourse[]) {
   return courses.map((course) => ({
-    id: `learning-${course.courseSlug}`,
+    id: `learning-${getCourseSlugByCourseId(course.courseSlug)}`,
     userId: "",
     userName: "GenZNext Learner",
     userPhone: "",
     userEmail: "",
-    courseId: course.courseSlug,
+    courseId: getCourseSlugByCourseId(course.courseSlug),
     courseName: course.title,
     amountPaid: 0,
     razorpayOrderId: "",
@@ -159,17 +160,19 @@ export function DashboardPanel({ initialCourseSlug = null, paymentCompleted = fa
   const isCoursePortalView = Boolean(selectedCourseSlug);
 
   const dashboardEnrollments = useMemo(() => {
-    const enrollmentMap = new Map(enrollments.map((enrollment) => [enrollment.courseId, enrollment]));
+    const enrollmentMap = new Map(enrollments.map((enrollment) => [getCanonicalCourseId(enrollment.courseId), enrollment]));
 
     for (const invoiceEnrollment of invoiceEnrollments) {
-      if (!enrollmentMap.has(invoiceEnrollment.courseId)) {
-        enrollmentMap.set(invoiceEnrollment.courseId, invoiceEnrollment);
+      const canonicalCourseId = getCanonicalCourseId(invoiceEnrollment.courseId);
+      if (!enrollmentMap.has(canonicalCourseId)) {
+        enrollmentMap.set(canonicalCourseId, invoiceEnrollment);
       }
     }
 
     for (const learningEnrollment of buildLocalLearningEnrollments(localLearningCourses)) {
-      if (!enrollmentMap.has(learningEnrollment.courseId)) {
-        enrollmentMap.set(learningEnrollment.courseId, learningEnrollment);
+      const canonicalCourseId = getCanonicalCourseId(learningEnrollment.courseId);
+      if (!enrollmentMap.has(canonicalCourseId)) {
+        enrollmentMap.set(canonicalCourseId, learningEnrollment);
       }
     }
 
@@ -445,7 +448,7 @@ export function DashboardPanel({ initialCourseSlug = null, paymentCompleted = fa
       <main className="min-h-full bg-[radial-gradient(circle_at_top,rgba(249,115,22,0.12),transparent_24%),linear-gradient(180deg,#071028_0%,#0B1736_100%)] px-4 py-6 text-white sm:px-6 lg:px-10">
         <div className="mx-auto max-w-4xl">
           <div className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.88),rgba(15,23,42,0.74))] p-6 shadow-[0_24px_64px_rgba(2,6,23,0.34)] sm:p-8">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#FDBA74]">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#7C3AED]">
               My Learning
             </div>
             <h1 className="mt-3 text-[30px] font-semibold leading-[1.12] text-white">
@@ -459,7 +462,7 @@ export function DashboardPanel({ initialCourseSlug = null, paymentCompleted = fa
               <button
                 type="button"
                 onClick={() => openAuthModal("login", `/dashboard/${encodeURIComponent(selectedCourseSlug)}`)}
-                className="inline-flex items-center justify-center rounded-xl bg-[linear-gradient(135deg,#F97316,#FB923C)] px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(249,115,22,0.26)] transition hover:-translate-y-0.5"
+                className="inline-flex items-center justify-center rounded-xl bg-[linear-gradient(135deg,#4F46E5,#2563EB)] px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(249,115,22,0.26)] transition hover:-translate-y-0.5"
               >
                 Continue to My Course
               </button>
@@ -468,7 +471,7 @@ export function DashboardPanel({ initialCourseSlug = null, paymentCompleted = fa
                   href={selectedGuestCourse.syllabusUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center justify-center rounded-xl border border-[rgba(249,115,22,0.24)] bg-[rgba(249,115,22,0.08)] px-5 py-3 text-sm font-medium text-[#FDBA74] transition hover:bg-[rgba(249,115,22,0.12)]"
+                  className="inline-flex items-center justify-center rounded-xl border border-[rgba(249,115,22,0.24)] bg-[rgba(249,115,22,0.08)] px-5 py-3 text-sm font-medium text-[#7C3AED] transition hover:bg-[rgba(249,115,22,0.12)]"
                 >
                   View Syllabus
                 </a>
@@ -491,7 +494,7 @@ export function DashboardPanel({ initialCourseSlug = null, paymentCompleted = fa
           ) : null}
 
           <div className="mb-6 rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.9),rgba(15,23,42,0.72))] p-6 shadow-[0_24px_60px_rgba(2,6,23,0.34)] sm:p-7">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#FDBA74]">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#7C3AED]">
               Student Dashboard
             </div>
             <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -502,7 +505,7 @@ export function DashboardPanel({ initialCourseSlug = null, paymentCompleted = fa
                 </p>
               </div>
               {summaryCards.length ? (
-                <div className="rounded-full border border-[rgba(249,115,22,0.2)] bg-[rgba(249,115,22,0.1)] px-3 py-1 text-[11px] font-semibold text-[#FDBA74]">
+                <div className="rounded-full border border-[rgba(249,115,22,0.2)] bg-[rgba(249,115,22,0.1)] px-3 py-1 text-[11px] font-semibold text-[#7C3AED]">
                   {summaryCards.length} active program{summaryCards.length === 1 ? "" : "s"}
                 </div>
               ) : null}

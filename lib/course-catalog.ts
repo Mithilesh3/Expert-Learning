@@ -1,7 +1,9 @@
 import { allCourses, type Course } from "@/data/courses";
+import { resolveCourseSlugAlias } from "@/lib/course-identity";
 
 export function getCourseBySlug(slug: string) {
-  return allCourses.find((course) => course.slug === slug);
+  return allCourses.find((course) => course.slug === slug)
+    || allCourses.find((course) => course.slug === resolveCourseSlugAlias(slug));
 }
 
 export function getCoursesBySlugs(slugs: string[]) {

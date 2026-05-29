@@ -1,6 +1,5 @@
 ﻿"use client";
 
-import { Bell } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo } from "react";
@@ -45,10 +44,10 @@ function LmsBrand() {
     <Link href="/dashboard/courses" className="flex shrink-0 items-center gap-2.5" aria-label="GenZNext Learning Portal">
       <div
         style={{
-          width: "28px",
-          height: "28px",
-          borderRadius: "7px",
-          background: "linear-gradient(135deg, #f97316, #a78bfa)",
+          width: "34px",
+          height: "34px",
+          borderRadius: "10px",
+          background: "linear-gradient(135deg, #6366F1, #4F46E5)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -57,7 +56,7 @@ function LmsBrand() {
       >
         <span
           style={{
-            fontSize: "12px",
+            fontSize: "13px",
             fontWeight: 900,
             color: "#ffffff",
             letterSpacing: "-1px",
@@ -70,10 +69,10 @@ function LmsBrand() {
         </span>
       </div>
       <span className="flex flex-col leading-none">
-        <span className="text-[13px] font-bold text-[#f1f5f9]">
-          Gen<span className="text-[#f97316]">Z</span>Next
+        <span className="text-[13px] font-bold text-[#0F172A]">
+          Gen<span className="text-[#4F46E5]">Z</span>Next
         </span>
-        <span className="text-[8px] text-[#64748b]">Research &amp; Training</span>
+        <span className="text-[9px] text-[#64748B]">Research &amp; Training</span>
       </span>
     </Link>
   );
@@ -91,31 +90,24 @@ export function LmsNavbar() {
     pathname === "/dashboard/courses" ? "My Courses" : pathname === "/dashboard/profile" ? "Profile" : currentCourse?.title || "Dashboard";
 
   return (
-    <header className="border-b border-[#334155] bg-[#1e293b]">
-      <div className="mx-auto flex h-[52px] w-full items-center justify-between gap-3 px-4 sm:px-5">
+    <header className="sticky top-0 z-40 border-b border-[rgba(226,232,240,0.9)] bg-[rgba(255,255,255,0.92)] backdrop-blur-[14px]">
+      <div className="mx-auto flex h-[72px] w-full items-center justify-between gap-3 px-4 sm:px-6">
         <div className="flex min-w-0 items-center gap-3">
           <LmsBrand />
-          <div className="hidden h-[18px] w-px bg-[#334155] sm:block" aria-hidden="true" />
+          <div className="hidden h-[22px] w-px bg-[#E2E8F0] sm:block" aria-hidden="true" />
           <div className="hidden min-w-0 items-center text-[12px] sm:flex">
-            <span className="truncate text-[#94a3b8]">Learning Portal</span>
-            <span className="px-1.5 text-[#475569]">/</span>
-            <span className="truncate font-medium text-[#f1f5f9]">{currentSectionLabel}</span>
+            <span className="truncate text-[#64748B]">Learning Portal</span>
+            <span className="px-1.5 text-[#94A3B8]">/</span>
+            <span className="truncate font-medium text-[#0F172A]">{currentSectionLabel}</span>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[7px] border border-[#334155] bg-[rgba(255,255,255,0.05)] text-[#64748b] transition hover:text-[#f1f5f9]"
-          >
-            <Bell className="h-4 w-4" />
-          </button>
-          <DashboardMenu buttonClassName={cn("h-[30px] rounded-[9px] px-3 py-1.5 text-[12px]")} />
+          <DashboardMenu buttonClassName={cn("h-12 rounded-[14px] px-4 text-[13px]")} />
           <button
             type="button"
             onClick={() => router.push("/")}
-            className="inline-flex items-center rounded-[7px] border border-[#334155] bg-[rgba(255,255,255,0.05)] px-3 py-1.5 text-[11px] text-[#94a3b8] transition hover:text-[#f1f5f9]"
+            className="inline-flex h-10 items-center rounded-[12px] border border-[#E2E8F0] bg-white px-3.5 text-[12px] text-[#64748B] shadow-[0_4px_14px_rgba(15,23,42,0.05)] transition hover:bg-[#F8FAFC] hover:text-[#0F172A]"
           >
             {"← Back to Main Site"}
           </button>

@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { formatPaiseToPrice, getCoursesBySlugs, parsePriceToPaise } from "@/lib/course-catalog";
+import { formatPaiseToPrice } from "@/lib/course-catalog";
+import { getCanonicalCourseIdBySlug, getCourseSlugByCourseId, resolveCheckoutOfferings } from "@/lib/offering-catalog";
 import { createInvoiceNumber, getInclusiveGstBreakup, type StoredOrderSuccess } from "@/lib/order-success";
 import {
-  getMyEnrollments,
+  findExistingEnrollmentCourseIds,
   isFirestorePermissionError,
   logFirestoreIssue,
   saveEnrollmentRecord,
@@ -16,17 +17,19 @@ import { paymentVerifySchema } from "@/lib/validations";
 export async function POST(request: Request) {
   try {
     const body = paymentVerifySchema.parse(await request.json());
-    const courseSlugs = body.courseSlugs?.length ? body.courseSlugs : body.courseSlug ? [body.courseSlug] : [];
-    const courses = getCoursesBySlugs(courseSlugs);
+    const requestedSlugs = body.courseSlugs?.length ? body.courseSlugs : body.courseSlug ? [body.courseSlug] : [];
+    const { offerings, missing } = resolveCheckoutOfferings(requestedSlugs);
     let clientSyncRequired = false;
 
-    if (courses.length !== courseSlugs.length) {
+    if (missing.length > 0 || offerings.length !== requestedSlugs.length) {
       return NextResponse.json({ success: false, message: "One or more selected courses were not found." }, { status: 404 });
     }
 
+    const enrolledCourseSlugs = offerings.flatMap((offering) => offering.courseSlugs);
+    const uniqueEnrolledCourseSlugs = Array.from(new Set(enrolledCourseSlugs));
+
     try {
-      const enrolledCourseIds = new Set((await getMyEnrollments(body.userId)).map((enrollment) => enrollment.courseId));
-      const duplicateCourses = courses.filter((course) => enrolledCourseIds.has(course.slug));
+      const duplicateCourses = await findExistingEnrollmentCourseIds(body.userId, uniqueEnrolledCourseSlugs);
 
       if (duplicateCourses.length > 0) {
         return NextResponse.json(
@@ -59,10 +62,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: "Invalid payment signature." }, { status: 400 });
     }
 
-    const subtotalPaise = courses.reduce((sum, course) => {
-      const amount = parsePriceToPaise(course.price);
-      return sum + (amount || 0);
-    }, 0);
+    const subtotalPaise = offerings.reduce((sum, offering) => sum + (offering.priceValue * 100), 0);
     const gstInvoiceEnabled = Boolean(body.gstNumber?.trim());
     const { baseAmountPaise, gstPaise, totalPaidPaise } = getInclusiveGstBreakup(subtotalPaise, gstInvoiceEnabled);
 
@@ -79,26 +79,36 @@ export async function POST(request: Request) {
 
     try {
       await Promise.all(
-        courses.map((course) =>
-          saveEnrollmentRecord({
+        uniqueEnrolledCourseSlugs.map((slug) => {
+          const catalogCourse = offerings
+            .flatMap((offering) => offering.kind === "course" && offering.slug === slug ? [offering] : [])
+            .at(0);
+          const fallback = resolveCheckoutOfferings([slug]).offerings[0];
+          const selected = catalogCourse || fallback;
+          if (!selected) {
+            return Promise.resolve(null);
+          }
+          return saveEnrollmentRecord({
             userId: body.userId,
             userName: body.name,
             userPhone: body.phone,
             userEmail: body.email || "",
-            courseId: course.slug,
-            courseName: course.title,
-            amountPaid: Math.round((parsePriceToPaise(course.price) || 0) / 100),
+            courseId: getCourseSlugByCourseId(slug),
+            canonicalCourseId: getCanonicalCourseIdBySlug(slug),
+            purchasedOfferingSlug: requestedSlugs[0] || slug,
+            courseName: selected.title,
+            amountPaid: Math.round(selected.priceValue),
             razorpayOrderId: body.razorpay_order_id,
             razorpayPaymentId: body.razorpay_payment_id,
             invoiceNumber,
             enrolledAt,
             status: "active",
-            duration: course.duration,
-            level: course.level,
+            duration: selected.duration,
+            level: selected.level,
             companyName: body.companyName?.trim() || "",
             gstNumber: body.gstNumber?.trim() || "",
-          }),
-        ),
+          });
+        }),
       );
     } catch (error) {
       if (!isFirestorePermissionError(error)) {
@@ -114,17 +124,17 @@ export async function POST(request: Request) {
         name: body.name,
         email: body.email,
         phone: body.phone,
-        courseTitles: courses.map((course) => course.title),
+        courseTitles: uniqueEnrolledCourseSlugs.map((slug) => resolveCheckoutOfferings([slug]).offerings[0]?.title || slug),
         paymentId: body.razorpay_payment_id,
         amountLabel: formatPaiseToPrice(totalPaidPaise),
         enrolledAt: paidAtIso,
       }),
       sendWhatsAppNotification({
         phone: body.phone,
-        body: `Hi ${body.name}, your enrollment for ${courses.length > 1 ? `${courses.length} programs` : courses[0]?.title} is confirmed. Payment ID: ${body.razorpay_payment_id}`,
+        body: `Hi ${body.name}, your enrollment for ${uniqueEnrolledCourseSlugs.length > 1 ? `${uniqueEnrolledCourseSlugs.length} programs` : resolveCheckoutOfferings([uniqueEnrolledCourseSlugs[0] || ""]).offerings[0]?.title} is confirmed. Payment ID: ${body.razorpay_payment_id}`,
       }),
       captureServerEvent(body.email, "payment_verified", {
-        courseSlugs,
+        courseSlugs: uniqueEnrolledCourseSlugs,
         paymentId: body.razorpay_payment_id,
       }),
     ]);
@@ -148,13 +158,16 @@ export async function POST(request: Request) {
         companyName: body.companyName?.trim() || undefined,
         gstNumber: body.gstNumber?.trim() || undefined,
       },
-      courses: courses.map((course) => ({
-        slug: course.slug,
-        title: course.title,
-        duration: course.duration,
-        level: course.level,
-        amountPaise: parsePriceToPaise(course.price) || 0,
-      })),
+      courses: uniqueEnrolledCourseSlugs.map((slug) => {
+        const selected = resolveCheckoutOfferings([slug]).offerings[0];
+        return {
+          slug,
+          title: selected?.title || slug,
+          duration: selected?.duration || "",
+          level: selected?.level || "",
+          amountPaise: (selected?.priceValue || 0) * 100,
+        };
+      }),
     };
 
     return NextResponse.json({ success: true, invoice, clientSyncRequired });

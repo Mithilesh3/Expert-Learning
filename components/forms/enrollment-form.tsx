@@ -2,9 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { Course } from "@/data/courses";
 import { useAuth } from "@/hooks/use-auth";
 import {
+  findExistingEnrollmentCourseIds,
   logFirestoreIssue,
   saveInvoiceEnrollments,
   saveUserWhatsappNumber,
@@ -49,7 +49,11 @@ function formatPhoneForProfile(value: string) {
 }
 
 type EnrollmentFormProps = {
-  course: Course;
+  course: {
+    slug: string;
+    title: string;
+    priceValue: number;
+  };
   className?: string;
   sectionId?: string;
   eyebrow?: string;
@@ -89,6 +93,14 @@ export function EnrollmentForm({
     setIsPaying(true);
 
     try {
+      const duplicateCourses = await findExistingEnrollmentCourseIds(user.uid, [course.slug]);
+
+      if (duplicateCourses.length > 0) {
+        setMessage("You are already enrolled in this course.");
+        setIsPaying(false);
+        return;
+      }
+
       const createResponse = await fetch("/api/payment/create", {
         method: "POST",
         headers: {
@@ -131,7 +143,7 @@ export function EnrollmentForm({
           contact: form.phone,
         },
         theme: {
-          color: "#F97316",
+          color: "#4F46E5",
         },
         handler: async (response: Record<string, string>) => {
           try {
@@ -254,7 +266,7 @@ export function EnrollmentForm({
         <button
           type="submit"
           disabled={pending || isPaying}
-          className="mt-5 inline-flex w-full items-center justify-center rounded-lg bg-[linear-gradient(135deg,#F97316,#FB923C)] px-5 py-[13px] text-sm font-semibold text-white shadow-[0_12px_30px_rgba(249,115,22,0.28),0_0_18px_rgba(251,146,60,0.12)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(249,115,22,0.34),0_0_24px_rgba(251,146,60,0.16)] disabled:opacity-70"
+          className="mt-5 inline-flex w-full items-center justify-center rounded-lg bg-[linear-gradient(135deg,#4F46E5,#2563EB)] px-5 py-[13px] text-sm font-semibold text-white shadow-[0_12px_30px_rgba(249,115,22,0.28),0_0_18px_rgba(251,146,60,0.12)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(249,115,22,0.34),0_0_24px_rgba(251,146,60,0.16)] disabled:opacity-70"
         >
           {pending || isPaying ? "Processing..." : submitLabel}
         </button>

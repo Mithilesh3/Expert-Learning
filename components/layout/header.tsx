@@ -1,609 +1,146 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import {
-  IconArrowRight,
-  IconBrain,
-  IconBrandAzure,
-  IconCloud,
-  IconSettingsAutomation,
-} from "@tabler/icons-react";
-import { ChevronDown, Menu, Search, ShoppingCart, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { Brand } from "@/components/layout/brand";
 import { DashboardMenu } from "@/components/layout/dashboard-menu";
-import { coursesByCategory } from "@/data/courses";
 import { useAuth } from "@/hooks/use-auth";
-import { useCart } from "@/hooks/use-cart";
-import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  { label: "AWS", href: "/courses/aws" },
-  { label: "Azure", href: "/courses/azure" },
-  { label: "AI", href: "/courses/ai" },
-  { label: "DevOps", href: "/courses/devops" },
-  { label: "Corporate", href: "/corporate-training" },
-] as const;
-
-const megaMenuCards = [
-  {
-    title: "AWS Courses",
-    description: "Certification pathways for cloud foundations, architecture, operations, and DevOps delivery.",
-    href: "/courses/aws",
-    category: "aws",
-    badge: "5 Programs",
-    accent: {
-      hover: "hover:border-[rgba(249,115,22,0.3)] hover:bg-[rgba(249,115,22,0.04)]",
-      icon: "border-[rgba(249,115,22,0.2)] bg-[rgba(249,115,22,0.12)] text-[#F97316]",
-      badge: "bg-[rgba(249,115,22,0.1)] text-[#FB923C]",
-    },
-    Icon: IconCloud,
-  },
-  {
-    title: "Azure Courses",
-    description: "Microsoft-aligned certification tracks across administration, security, DevOps, and architecture.",
-    href: "/courses/azure",
-    category: "azure",
-    badge: "5 Programs",
-    accent: {
-      hover: "hover:border-[rgba(59,130,246,0.3)] hover:bg-[rgba(59,130,246,0.04)]",
-      icon: "border-[rgba(59,130,246,0.2)] bg-[rgba(59,130,246,0.12)] text-[#60A5FA]",
-      badge: "bg-[rgba(59,130,246,0.1)] text-[#60A5FA]",
-    },
-    Icon: IconBrandAzure,
-  },
-  {
-    title: "AI Courses",
-    description: "Modern AI programs covering machine learning, Generative AI, MLOps, and analytics applications.",
-    href: "/courses/ai",
-    category: "ai",
-    badge: "4 Programs",
-    accent: {
-      hover: "hover:border-[rgba(139,92,246,0.3)] hover:bg-[rgba(139,92,246,0.04)]",
-      icon: "border-[rgba(139,92,246,0.2)] bg-[rgba(139,92,246,0.12)] text-[#A78BFA]",
-      badge: "bg-[rgba(139,92,246,0.1)] text-[#A78BFA]",
-    },
-    Icon: IconBrain,
-  },
-  {
-    title: "DevOps Courses",
-    description: "Hands-on DevOps pathways for containers, CI/CD, monitoring, automation, and platform workflows.",
-    href: "/courses/devops",
-    category: "devops",
-    badge: "4 Programs",
-    accent: {
-      hover: "hover:border-[rgba(16,185,129,0.3)] hover:bg-[rgba(16,185,129,0.04)]",
-      icon: "border-[rgba(16,185,129,0.2)] bg-[rgba(16,185,129,0.12)] text-[#34D399]",
-      badge: "bg-[rgba(16,185,129,0.1)] text-[#34D399]",
-    },
-    Icon: IconSettingsAutomation,
-  },
-] as const;
-
-const megaMenuQuickLinks = [
-  {
-    title: "Summer Training 2026",
-    description: "Live classes · July batch open",
-    href: "/enroll/azure-administrator",
-    icon: "☀️",
-  },
-  {
-    title: "Corporate Training",
-    description: "Team & enterprise plans",
-    href: "/corporate-training",
-    icon: "🏢",
-  },
-] as const;
-
-function Divider() {
-  return <div className="hidden h-[26px] w-px bg-[rgba(255,255,255,0.07)] lg:block" aria-hidden="true" />;
-}
-
 export function Header() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [coursesOpen, setCoursesOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
   const pathname = usePathname();
-  const router = useRouter();
-  const reducedMotion = useReducedMotion();
-  const { count: cartCount, hydrated: cartHydrated } = useCart();
+  const currentPath = pathname ?? "";
   const { isAuthReady, openAuthModal, user } = useAuth();
-  const coursesTriggerRef = useRef<HTMLDivElement | null>(null);
-  const coursesDropdownRef = useRef<HTMLDivElement | null>(null);
-  const searchOverlayRef = useRef<HTMLDivElement | null>(null);
-  const searchInputRef = useRef<HTMLInputElement | null>(null);
-
+  const [mobileOpen, setMobileOpen] = useState(false);
   const isAuthed = isAuthReady && Boolean(user);
+  const navItems: Array<{ label: string; href: string; match: string[] }> = [
+    { label: "Home", href: "/", match: ["/"] },
+    {
+      label: "Courses",
+      href: "/courses",
+      match: ["/courses", "/aws", "/azure", "/ai", "/genai", "/devops", "/devsecops"],
+    },
+    { label: "Programs", href: "/programs", match: ["/programs", "/corporate-training"] },
+  ];
 
-  const searchSuggestions = useMemo(
-    () => [
-      { label: "AWS Solutions Architect", href: "/courses/aws" },
-      { label: "Azure Administrator AZ-104", href: "/courses/azure" },
-      { label: "AI & Machine Learning", href: "/courses/ai" },
-      { label: "Docker & Kubernetes", href: "/courses/devops" },
-    ],
-    [],
-  );
-
-  function executeSearch(query: string) {
-    const trimmed = query.trim();
-    router.push(trimmed ? `/courses?search=${encodeURIComponent(trimmed)}` : "/courses");
-    setSearchOpen(false);
-    setMobileOpen(false);
-  }
-
-  function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    executeSearch(searchValue);
-  }
-
-  function handleCoursesMenuNavigation(href: string) {
-    setCoursesOpen(false);
-    router.push(href);
-  }
-
-  useEffect(() => {
-    if (!coursesOpen) {
-      return;
+  const activeNavLabel = (() => {
+    if (currentPath === "/") {
+      return "Home";
     }
 
-    function handlePointerDown(event: MouseEvent) {
-      const target = event.target as Node;
-      const clickedTrigger = coursesTriggerRef.current?.contains(target);
-      const clickedDropdown = coursesDropdownRef.current?.contains(target);
-
-      if (!clickedTrigger && !clickedDropdown) {
-        setCoursesOpen(false);
-      }
+    if (currentPath === "/programs" || currentPath === "/corporate-training") {
+      return "Programs";
     }
 
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setCoursesOpen(false);
-      }
+    if (
+      currentPath === "/courses" ||
+      currentPath.startsWith("/courses/") ||
+      ["/aws", "/azure", "/ai", "/genai", "/devops", "/devsecops"].includes(currentPath)
+    ) {
+      return "Courses";
     }
 
-    document.addEventListener("mousedown", handlePointerDown);
-    document.addEventListener("keydown", handleEscape);
-
-    return () => {
-      document.removeEventListener("mousedown", handlePointerDown);
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [coursesOpen]);
-
-  useEffect(() => {
-    if (!searchOpen) {
-      return;
-    }
-
-    const focusTimeout = window.setTimeout(() => searchInputRef.current?.focus(), 50);
-
-    function handlePointerDown(event: MouseEvent) {
-      const target = event.target as Node;
-
-      if (!searchOverlayRef.current?.contains(target)) {
-        setSearchOpen(false);
-      }
-    }
-
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setSearchOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handlePointerDown);
-    document.addEventListener("keydown", handleEscape);
-
-    return () => {
-      window.clearTimeout(focusTimeout);
-      document.removeEventListener("mousedown", handlePointerDown);
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [searchOpen]);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setCoursesOpen(false);
-      setSearchOpen(false);
-      setMobileOpen(false);
-    }, 0);
-
-    return () => window.clearTimeout(timer);
-  }, [pathname]);
+    return "";
+  })();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[rgba(255,255,255,0.07)] bg-[#0D1117]">
-      <div className="mx-auto flex h-16 w-full max-w-[1400px] min-w-0 items-center gap-[10px] overflow-visible px-4 sm:px-8">
-        <Brand className="mr-1 self-center" />
-        <Divider />
-
-        <Link
-          href="/enroll/azure-administrator"
-          className="hidden shrink-0 self-center whitespace-nowrap rounded-full border border-[rgba(249,115,22,0.2)] bg-[rgba(249,115,22,0.1)] px-[10px] py-[3px] text-[11px] font-medium text-[#FB923C] transition-all duration-150 ease-in-out hover:border-[rgba(249,115,22,0.3)] hover:bg-[rgba(249,115,22,0.14)] lg:inline-flex"
-        >
-          Summer 2026
-        </Link>
-
-        <Divider />
-
-        <button
-          type="button"
-          onClick={() => setSearchOpen(true)}
-          className="hidden h-[34px] w-[34px] shrink-0 items-center justify-center self-center rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] text-[#475569] transition-all duration-150 ease-in-out hover:border-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.07)] hover:text-[#94A3B8] lg:inline-flex"
-          aria-label="Search courses"
-        >
-          <Search className="h-[15px] w-[15px]" />
-        </button>
-
-        <nav className="hidden min-w-0 shrink-0 items-center self-center gap-[10px] overflow-hidden whitespace-nowrap lg:flex">
-          <div ref={coursesTriggerRef} className="relative shrink-0">
-            <button
-              type="button"
-              onClick={() => setCoursesOpen((value) => !value)}
-              className={cn(
-                "pointer-events-auto relative z-[60] shrink-0 cursor-pointer whitespace-nowrap rounded-[7px] px-[10px] py-[5px] text-[13px] transition-all duration-150 ease-in-out",
-                coursesOpen
-                  ? "bg-[rgba(249,115,22,0.08)] text-[#F97316]"
-                  : pathname === "/courses"
-                    ? "bg-[rgba(249,115,22,0.08)] text-[#F97316]"
-                    : "text-[#64748B] hover:bg-[rgba(255,255,255,0.04)] hover:text-[#94A3B8]",
-              )}
-              aria-expanded={coursesOpen}
-              aria-controls="courses-mega-menu"
-            >
-              <span className="inline-flex items-center gap-1">
-                Courses
-                <ChevronDown
-                  className={cn("h-3.5 w-3.5 transition-transform duration-200", coursesOpen ? "rotate-180" : "rotate-0")}
-                />
-              </span>
-              {!coursesOpen && pathname === "/courses" ? (
-                <span className="pointer-events-none absolute bottom-[-18px] left-1/2 h-[2px] w-5 -translate-x-1/2 rounded-[2px] bg-[#F97316]" aria-hidden="true" />
-              ) : null}
-            </button>
-          </div>
+    <header className="nav-shell sticky top-0 z-50 border-b">
+      <div className="mx-auto flex h-[74px] max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <Brand />
+        <nav className="hidden items-center gap-1 md:flex">
           {navItems.map((item) => {
-            const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-
+            const isActive = activeNavLabel === item.label;
             return (
               <Link
-                key={item.href}
+                key={item.href + item.label}
                 href={item.href}
                 className={cn(
-                  "relative shrink-0 whitespace-nowrap rounded-[7px] px-[10px] py-[5px] text-[13px] transition-all duration-150 ease-in-out",
-                  active
-                    ? "bg-[rgba(249,115,22,0.08)] text-[#F97316]"
-                    : "text-[#64748B] hover:bg-[rgba(255,255,255,0.04)] hover:text-[#94A3B8]",
+                  "rounded-full px-3.5 py-2 text-sm font-medium transition-all duration-250 ease-out",
+                  isActive
+                    ? "border border-[#C7D2FE] bg-[#EEF2FF] font-semibold text-[#4338CA] shadow-[0_6px_18px_rgba(79,70,229,0.12)]"
+                    : "bg-transparent text-[#475569] hover:bg-[rgba(79,70,229,0.06)] hover:text-[#4F46E5]",
                 )}
               >
                 {item.label}
-                {active ? (
-                  <span className="pointer-events-none absolute bottom-[-18px] left-1/2 h-[2px] w-5 -translate-x-1/2 rounded-[2px] bg-[#F97316]" aria-hidden="true" />
-                ) : null}
               </Link>
             );
           })}
         </nav>
-
-        <div className="flex-1" />
-
-        <Link
-          href="/cart"
-          className="relative hidden h-[34px] w-[34px] shrink-0 items-center justify-center self-center rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] text-[#64748B] transition-all duration-150 ease-in-out hover:border-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.07)] hover:text-[#94A3B8] lg:inline-flex"
-          aria-label="My cart"
-        >
-          <ShoppingCart className="h-4 w-4" />
-          {cartHydrated && cartCount > 0 ? (
-            <span className="absolute top-1 right-1 inline-flex min-w-4 items-center justify-center rounded-full border-[1.5px] border-[#0D1117] bg-[#F97316] px-1 text-[10px] font-semibold leading-4 text-white">
-              {cartCount}
-            </span>
-          ) : null}
-        </Link>
-
-        {isAuthed ? (
-          <DashboardMenu
-            className="hidden lg:block"
-            buttonClassName="h-[34px] self-center px-3.5 py-[7px] text-[13px]"
-          />
-        ) : (
-          <button
-            type="button"
-            onClick={() => openAuthModal("login", pathname)}
-            className="hidden min-w-[68px] shrink-0 self-center whitespace-nowrap rounded-[8px] border border-[rgba(255,255,255,0.12)] bg-transparent px-4 py-[7px] text-[13px] text-[#94A3B8] transition-all duration-150 ease-in-out hover:border-[rgba(255,255,255,0.2)] hover:text-[#F1F5F9] lg:inline-flex lg:items-center lg:justify-center"
-          >
-            Login
-          </button>
-        )}
-
+        <div className="hidden items-center gap-2.5 md:flex">
+          {isAuthed ? (
+            <DashboardMenu />
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => openAuthModal("login", pathname)}
+                className="rounded-xl px-4 py-2 text-sm font-semibold text-[#4F46E5] transition hover:text-[#4338CA]"
+              >
+                Login
+              </button>
+              <button
+                type="button"
+                onClick={() => openAuthModal("signup", pathname)}
+                className="rounded-xl bg-[linear-gradient(135deg,#6366F1,#4F46E5)] px-4 py-2 text-sm font-semibold text-white transition hover:shadow-[0_10px_24px_rgba(99,102,241,0.18)]"
+              >
+                Get Started
+              </button>
+            </>
+          )}
+        </div>
         <button
           type="button"
-          onClick={() => setMobileOpen((value) => !value)}
-          className="inline-flex h-11 w-11 shrink-0 items-center justify-center self-center rounded-[10px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] text-[#94A3B8] transition-all duration-150 ease-in-out hover:border-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.07)] hover:text-[#F1F5F9] lg:hidden"
-          aria-label="Toggle navigation"
+          onClick={() => setMobileOpen((v) => !v)}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#E5E7EB] text-[#6B7280] transition hover:text-[#111827] md:hidden"
+          aria-label="Toggle menu"
         >
-          {mobileOpen ? <X className="h-4.5 w-4.5" /> : <Menu className="h-4.5 w-4.5" />}
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
 
-      <AnimatePresence>
-        {coursesOpen ? (
-          <motion.div
-            id="courses-mega-menu"
-            initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
-            animate={reducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
-            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
-            transition={{ duration: reducedMotion ? 0.12 : 0.15, ease: "easeOut" }}
-            className="pointer-events-auto absolute top-16 right-0 left-0 z-[100] hidden w-full lg:block"
-          >
-            <div
-              ref={coursesDropdownRef}
-              className="max-h-[calc(100vh-4rem)] overflow-y-auto border-t-[0.5px] border-b-[0.5px] border-t-[rgba(255,255,255,0.05)] border-b-[rgba(255,255,255,0.07)] bg-[#0f1623] px-8 pt-5 pb-6 shadow-[0_24px_48px_rgba(0,0,0,0.5)]"
-            >
-              <div className="mx-auto grid max-w-[1400px] grid-cols-[1fr_220px] gap-4">
-                <div className="grid grid-cols-2 gap-2">
-                  {megaMenuCards.map((item) => {
-                    const courses = coursesByCategory[item.category];
-
-                    return (
-                      <button
-                        key={item.href}
-                        type="button"
-                        onClick={() => handleCoursesMenuNavigation(item.href)}
-                        className={cn(
-                          "flex cursor-pointer flex-col gap-[10px] rounded-[12px] border-[0.5px] border-transparent bg-[rgba(255,255,255,0.02)] p-[14px] text-left transition-all duration-150 ease-in-out",
-                          item.accent.hover,
-                        )}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className={cn("flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-[10px] border", item.accent.icon)}>
-                            <item.Icon size={18} />
-                          </div>
-                          <div className="min-w-0">
-                            <div className="text-[13px] font-semibold text-[#F1F5F9]">{item.title}</div>
-                            <p className="mt-1 line-clamp-2 text-[11px] leading-[1.45] text-[#64748B]">{item.description}</p>
-                          </div>
-                        </div>
-
-                        <div className="grid gap-1">
-                          {courses.map((course, index) => {
-                            const popular = index === 0;
-
-                            return (
-                              <div key={course.slug} className="flex items-center gap-2">
-                                <span className={cn("h-1 w-1 rounded-full", popular ? "bg-[#F97316]" : "bg-[#334155]")} />
-                                <span className={cn("line-clamp-1 text-[11px]", popular ? "text-[#64748B]" : "text-[#475569]")}>
-                                  {course.title}
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-
-                        <div className="mt-auto flex items-center justify-between">
-                          <span className={cn("rounded-full px-2 py-[2px] text-[10px]", item.accent.badge)}>{item.badge}</span>
-                          <IconArrowRight size={13} className="text-[#334155]" />
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className="rounded-[10px] border-[0.5px] border-[rgba(249,115,22,0.15)] bg-[linear-gradient(135deg,rgba(249,115,22,0.08),rgba(139,92,246,0.06))] p-[14px]">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[#F97316]">🔥 Summer Special</div>
-                  <div className="mt-3 text-[13px] font-semibold text-[#F1F5F9]">Summer Training 2026</div>
-                  <p className="mt-2 text-[11px] leading-[1.55] text-[#64748B]">
-                    Live mentor-led training with practical cloud labs and career-ready project guidance.
-                  </p>
-                  <div className="mt-4 space-y-2 text-[11px]">
-                    <div className="text-[#34D399]">✓ Azure Administrator (AZ-104)</div>
-                    <div className="text-[#475569]">○ More courses coming soon</div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleCoursesMenuNavigation("/enroll/azure-administrator")}
-                    className="mt-5 rounded-[6px] bg-[#F97316] px-[14px] py-[6px] text-[11px] font-semibold text-white transition hover:bg-[#EA580C]"
-                  >
-                    View Summer Batch →
-                  </button>
-                </div>
-              </div>
-
-              <div className="mx-auto my-[14px] h-px max-w-[1400px] bg-[rgba(255,255,255,0.05)]" />
-
-              <div className="mx-auto grid max-w-[1400px] grid-cols-3 gap-2">
-                {megaMenuQuickLinks.map((item) => (
-                  <button
-                    key={item.href}
-                    type="button"
-                    onClick={() => handleCoursesMenuNavigation(item.href)}
-                    className="flex cursor-pointer items-center gap-[10px] rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.05)] bg-[rgba(255,255,255,0.02)] px-[14px] py-3 text-left transition-all duration-150 ease-in-out hover:border-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.04)]"
-                  >
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] bg-[rgba(255,255,255,0.04)] text-[15px]">
-                      {item.icon}
-                    </span>
-                    <span>
-                      <span className="block text-[12px] font-medium text-[#94A3B8]">{item.title}</span>
-                      <span className="block text-[11px] text-[#475569]">{item.description}</span>
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {searchOpen ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: reducedMotion ? 0.08 : 0.14 }}
-            className="fixed inset-0 z-[200] flex items-start justify-center bg-[rgba(0,0,0,0.6)] px-4 pt-[15vh] backdrop-blur-[4px]"
-          >
-            <motion.div
-              ref={searchOverlayRef}
-              initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.98 }}
-              animate={reducedMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
-              exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.98 }}
-              transition={{ duration: reducedMotion ? 0.08 : 0.16, ease: "easeOut" }}
-              className="w-full max-w-[560px] rounded-[12px] border border-[rgba(255,255,255,0.1)] bg-[#111827] p-4 shadow-[0_28px_80px_rgba(0,0,0,0.45)]"
-            >
-              <form onSubmit={handleSearchSubmit}>
-                <label className="flex h-12 items-center gap-3 rounded-[10px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] px-4">
-                  <Search className="h-5 w-5 shrink-0 text-[#475569]" />
-                  <input
-                    ref={searchInputRef}
-                    value={searchValue}
-                    onChange={(event) => setSearchValue(event.target.value)}
-                    placeholder="Search AWS, Azure, AI, DevOps courses..."
-                    className="h-full w-full bg-transparent text-[16px] text-[#F1F5F9] outline-none placeholder:text-[#475569]"
-                    aria-label="Search courses"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setSearchOpen(false)}
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] text-[#64748B] transition hover:bg-[rgba(255,255,255,0.05)] hover:text-[#94A3B8]"
-                    aria-label="Close search"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </label>
-              </form>
-
-              <div className="mt-4">
-                <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#334155]">
-                  Suggested searches
-                </div>
-                <div className="space-y-1">
-                  {searchSuggestions.map((item) => (
-                    <button
-                      key={item.href + item.label}
-                      type="button"
-                      onClick={() => {
-                        setSearchOpen(false);
-                        setSearchValue(item.label);
-                        router.push(item.href);
-                      }}
-                      className="flex w-full items-center justify-between rounded-[8px] px-3 py-2 text-left text-[13px] text-[#94A3B8] transition hover:bg-[rgba(255,255,255,0.04)] hover:text-[#F1F5F9]"
-                    >
-                      <span>{item.label}</span>
-                      <IconArrowRight size={14} className="text-[#334155]" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {mobileOpen ? (
-          <motion.div
-            initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
-            animate={reducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
-            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
-            transition={{ duration: reducedMotion ? 0.12 : 0.15, ease: "easeOut" }}
-            className="border-t border-[rgba(255,255,255,0.07)] bg-[#0D1117] lg:hidden"
-          >
-            <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
-              <div className="flex items-center gap-2">
+      {mobileOpen ? (
+        <div className="border-t border-[#E5E7EB] bg-white px-4 py-3 md:hidden">
+          <div className="space-y-1">
+            {navItems.map((item) => {
+              const isActive = activeNavLabel === item.label;
+              return (
                 <Link
-                  href="/enroll/azure-administrator"
-                  onClick={() => setMobileOpen(false)}
-                  className="shrink-0 rounded-full border border-[rgba(249,115,22,0.2)] bg-[rgba(249,115,22,0.1)] px-[10px] py-[3px] text-[11px] font-medium text-[#FB923C]"
-                >
-                  Summer 2026
-                </Link>
-                <Link
-                  href="/cart"
-                  onClick={() => setMobileOpen(false)}
-                  className="relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] text-[#64748B]"
-                  aria-label="My cart"
-                >
-                  <ShoppingCart className="h-4 w-4" />
-                  {cartHydrated && cartCount > 0 ? (
-                    <span className="absolute top-1 right-1 inline-flex min-w-4 items-center justify-center rounded-full border-[1.5px] border-[#0D1117] bg-[#F97316] px-1 text-[10px] font-semibold leading-4 text-white">
-                      {cartCount}
-                    </span>
-                  ) : null}
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => setSearchOpen(true)}
-                  className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] text-[#475569]"
-                  aria-label="Search courses"
-                >
-                  <Search className="h-[15px] w-[15px]" />
-                </button>
-              </div>
-
-              <div className="mt-4 space-y-1.5">
-                <Link
-                  href="/courses"
-                  onClick={() => setMobileOpen(false)}
+                  key={`mobile-${item.href}-${item.label}`}
+                  href={item.href}
                   className={cn(
-                    "block rounded-[8px] px-3 py-2.5 text-sm transition-all duration-150 ease-in-out",
-                    pathname === "/courses"
-                      ? "bg-[rgba(249,115,22,0.08)] text-[#F97316]"
-                      : "text-[#94A3B8] hover:bg-[rgba(255,255,255,0.04)] hover:text-[#F1F5F9]",
+                    "block rounded-xl px-3 py-2 text-sm transition-all duration-200",
+                    isActive
+                      ? "border border-[#C7D2FE] bg-[#EEF2FF] font-semibold text-[#4338CA] shadow-[0_6px_18px_rgba(79,70,229,0.10)]"
+                      : "text-[#475569] hover:bg-[rgba(79,70,229,0.06)] hover:text-[#4F46E5]",
                   )}
                 >
-                  Courses
+                  {item.label}
                 </Link>
-                {navItems.map((item) => {
-                  const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setMobileOpen(false)}
-                      className={cn(
-                        "block rounded-[8px] px-3 py-2.5 text-sm transition-all duration-150 ease-in-out",
-                        active
-                          ? "bg-[rgba(249,115,22,0.08)] text-[#F97316]"
-                          : "text-[#94A3B8] hover:bg-[rgba(255,255,255,0.04)] hover:text-[#F1F5F9]",
-                      )}
-                    >
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </div>
-              <div className="mt-4">
-                {isAuthed ? (
-                  <DashboardMenu
-                    fullWidth
-                    onNavigate={() => setMobileOpen(false)}
-                    buttonClassName="h-10 rounded-[10px] border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.04)] text-sm"
-                    panelClassName="mt-0"
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      openAuthModal("login", pathname);
-                      setMobileOpen(false);
-                    }}
-                    className="inline-flex h-10 w-full items-center justify-center rounded-[8px] border border-[rgba(255,255,255,0.12)] bg-transparent text-sm text-[#94A3B8] transition-all duration-150 ease-in-out hover:border-[rgba(255,255,255,0.2)] hover:text-[#F1F5F9]"
-                  >
-                    Login
-                  </button>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+              );
+            })}
+            {!isAuthed ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => openAuthModal("login", pathname)}
+                  className="w-full rounded-xl px-3 py-2 text-left text-sm font-semibold text-[#4F46E5] hover:text-[#4338CA]"
+                >
+                  Login
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openAuthModal("signup", pathname)}
+                  className="w-full rounded-xl bg-[linear-gradient(135deg,#6366F1,#4F46E5)] px-3 py-2 text-left text-sm font-semibold text-white"
+                >
+                  Get Started
+                </button>
+              </>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
     </header>
   );
 }

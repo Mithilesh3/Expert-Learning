@@ -8,10 +8,16 @@ import { buildMetadata } from "@/lib/metadata";
 import "./globals.css";
 
 export const metadata: Metadata = buildMetadata({
-  title: "GenZNext Research & Training | AWS, Azure, AI & DevOps Certification Programs",
+  title: "GenZNext Research & Training | AI, GenAI, Agentic AI, DevSecOps, AWS & Azure Certifications",
   description:
-    "GenZNext Research & Training helps students and professionals master AWS, Azure, AI, cloud, data engineering, GenAI, and DevOps with live mentorship and career-focused certification programs.",
+    "GenZNext Research & Training helps students and professionals master AI, Generative AI, Agentic AI, DevSecOps, AWS and Azure certifications with live mentorship and career-focused programs.",
 });
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#4F46E5",
+};
 
 export default function RootLayout({
   children,

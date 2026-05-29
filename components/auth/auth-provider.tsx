@@ -16,7 +16,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(() => !isFirebaseConfigured());
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState<AuthModalMode>("login");
+  const [modalMode, setModalMode] = useState<AuthModalMode>("choice");
   const [redirectAfterAuth, setRedirectAfterAuth] = useState("/dashboard");
   const [pendingAuthAction, setPendingAuthAction] = useState<(() => void | Promise<void>) | null>(null);
 

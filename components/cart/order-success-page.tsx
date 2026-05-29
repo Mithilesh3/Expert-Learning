@@ -100,7 +100,7 @@ export function OrderSuccessPage() {
     return (
       <section className="px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl rounded-[18px] border border-[#1E2D42] bg-[#111827] p-6 sm:p-8">
-          <div className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#F97316]">Order Success</div>
+          <div className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#4F46E5]">Order Success</div>
           <h1 className="mt-2 text-[28px] font-bold text-white">Invoice not available</h1>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-[#CBD5E1]">
             We could not load the latest invoice details on this device. If your payment was completed, your enrollment is still safe.
@@ -108,13 +108,13 @@ export function OrderSuccessPage() {
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href={dashboardPath}
-              className="inline-flex rounded-[8px] bg-[#F97316] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#EA580C]"
+              className="inline-flex rounded-[8px] bg-[#4F46E5] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#4338CA]"
             >
               Open LMS Portal
             </Link>
             <Link
               href="/courses"
-              className="inline-flex rounded-[8px] border border-[rgba(249,115,22,0.2)] bg-[rgba(249,115,22,0.08)] px-4 py-2.5 text-sm font-medium text-[#F97316] transition hover:bg-[rgba(249,115,22,0.12)]"
+              className="inline-flex rounded-[8px] border border-[rgba(249,115,22,0.2)] bg-[rgba(249,115,22,0.08)] px-4 py-2.5 text-sm font-medium text-[#4F46E5] transition hover:bg-[rgba(249,115,22,0.12)]"
             >
               Explore More Courses
             </Link>
@@ -144,7 +144,7 @@ export function OrderSuccessPage() {
             <button
               type="button"
               onClick={() => window.print()}
-              className="inline-flex items-center gap-2 rounded-[8px] border border-[rgba(249,115,22,0.2)] bg-[rgba(249,115,22,0.1)] px-[14px] py-2 text-sm font-medium text-[#F97316] transition hover:bg-[rgba(249,115,22,0.14)] print:hidden"
+              className="inline-flex items-center gap-2 rounded-[8px] border border-[rgba(249,115,22,0.2)] bg-[rgba(249,115,22,0.1)] px-[14px] py-2 text-sm font-medium text-[#4F46E5] transition hover:bg-[rgba(249,115,22,0.14)] print:hidden"
             >
               <Download className="h-4 w-4" />
               Download PDF
@@ -254,7 +254,7 @@ export function OrderSuccessPage() {
             <div className="border-t border-[#1A2537] pt-3">
               <div className="flex items-center justify-between">
                 <span className="text-[15px] font-semibold text-[#F1F5F9]">Total Paid</span>
-                <span className="text-[18px] font-semibold text-[#F97316]">
+                <span className="text-[18px] font-semibold text-[#4F46E5]">
                   {formatCurrencyInrFromPaise(invoice.totalPaidPaise)}
                 </span>
               </div>
@@ -281,13 +281,13 @@ export function OrderSuccessPage() {
           <div className="flex flex-wrap gap-3">
             <Link
               href={dashboardPath}
-              className="inline-flex rounded-[8px] bg-[#F97316] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#EA580C]"
+              className="inline-flex rounded-[8px] bg-[#4F46E5] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#4338CA]"
             >
               Open LMS Portal
             </Link>
             <Link
               href="/courses"
-              className="inline-flex rounded-[8px] border border-[rgba(249,115,22,0.2)] bg-[rgba(249,115,22,0.08)] px-4 py-2.5 text-sm font-medium text-[#F97316] transition hover:bg-[rgba(249,115,22,0.12)]"
+              className="inline-flex rounded-[8px] border border-[rgba(249,115,22,0.2)] bg-[rgba(249,115,22,0.08)] px-4 py-2.5 text-sm font-medium text-[#4F46E5] transition hover:bg-[rgba(249,115,22,0.12)]"
             >
               Explore More Courses
             </Link>

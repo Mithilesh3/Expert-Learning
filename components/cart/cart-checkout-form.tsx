@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
 import { formatPaiseToPrice } from "@/lib/course-catalog";
 import {
+  findExistingEnrollmentCourseIds,
   getUserProfile,
   logFirestoreIssue,
   saveInvoiceEnrollments,
@@ -182,6 +183,21 @@ export function CartCheckoutForm() {
     setIsPaying(true);
 
     try {
+      const duplicateCourses = await findExistingEnrollmentCourseIds(
+        user.uid,
+        courses.map((course) => course.slug),
+      );
+
+      if (duplicateCourses.length > 0) {
+        setMessage(
+          duplicateCourses.length === 1
+            ? "You are already enrolled in this course."
+            : "One or more selected courses are already enrolled in your account.",
+        );
+        setIsPaying(false);
+        return;
+      }
+
       const payload = {
         userId: user.uid,
         name: accountName.trim(),
@@ -230,7 +246,7 @@ export function CartCheckoutForm() {
           contact: payload.phone,
         },
         theme: {
-          color: "#F97316",
+          color: "#4F46E5",
         },
         handler: async (response: Record<string, string>) => {
           try {
@@ -314,7 +330,7 @@ export function CartCheckoutForm() {
         </p>
         <Link
           href="/courses"
-          className="mt-5 inline-flex rounded-[8px] border border-[rgba(249,115,22,0.2)] bg-[rgba(249,115,22,0.08)] px-4 py-2 text-sm font-medium text-[#F97316] transition hover:bg-[rgba(249,115,22,0.12)]"
+          className="mt-5 inline-flex rounded-[8px] border border-[rgba(249,115,22,0.2)] bg-[rgba(249,115,22,0.08)] px-4 py-2 text-sm font-medium text-[#4F46E5] transition hover:bg-[rgba(249,115,22,0.12)]"
         >
           Explore Courses
         </Link>
@@ -332,7 +348,7 @@ export function CartCheckoutForm() {
         <button
           type="button"
           onClick={() => openAuthModal("login", "/checkout")}
-          className="mt-5 inline-flex rounded-[8px] bg-[#F97316] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#EA580C]"
+          className="mt-5 inline-flex rounded-[8px] bg-[#4F46E5] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#4338CA]"
         >
           Continue with Login
         </button>
@@ -400,7 +416,7 @@ export function CartCheckoutForm() {
                     addGstDetails: event.target.checked,
                   }))
                 }
-                className="mt-1 h-4 w-4 rounded border border-[#2D3F55] bg-transparent accent-[#F97316]"
+                className="mt-1 h-4 w-4 rounded border border-[#2D3F55] bg-transparent accent-[#4F46E5]"
               />
               <span>
                 <span className="block text-sm font-medium text-[#F1F5F9]">
@@ -511,7 +527,7 @@ export function CartCheckoutForm() {
           )}
           <div className="flex items-center justify-between border-t border-[#1A2537] pt-3">
             <span className="text-[15px] font-semibold text-[#F1F5F9]">Total Payable</span>
-            <span className="text-[18px] font-semibold text-[#F97316]">{formatCurrencyInrFromPaise(totalPaidPaise)}</span>
+            <span className="text-[18px] font-semibold text-[#4F46E5]">{formatCurrencyInrFromPaise(totalPaidPaise)}</span>
           </div>
         </div>
 
@@ -530,7 +546,7 @@ export function CartCheckoutForm() {
           type="submit"
           form={checkoutFormId}
           disabled={pending || isPaying}
-          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-[10px] bg-[#F97316] px-4 py-[13px] text-[15px] font-semibold text-white transition hover:bg-[#EA580C] disabled:cursor-not-allowed disabled:opacity-70"
+          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-[10px] bg-[#4F46E5] px-4 py-[13px] text-[15px] font-semibold text-white transition hover:bg-[#4338CA] disabled:cursor-not-allowed disabled:opacity-70"
         >
           {pending || isPaying ? (
             "Processing..."
